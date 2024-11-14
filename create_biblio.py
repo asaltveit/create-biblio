@@ -283,10 +283,10 @@ def checkOutputFileExists(file):
     try:
         path = os.path.exists(file)
         if path:
-            print("Update: Output path exists - default (last parameter of input path) will be used instead")
+            print("Update: Output path exists")
             return True
         else:
-            print("Error: Output path does not exist")
+            print("Error: Output path does not exist  - default (last parameter of input path) will be used instead")
             return False
     except:
         print("Error: Output path does not exist - default (last parameter of input path) will be used instead")
