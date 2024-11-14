@@ -20,7 +20,7 @@ risEntries = []
 def createBiblio(outputFile=""):
     print("Update: Creating RIS file")
     # TODO Will a default ever be needed here?
-    file = outputFile or "jstor_data.ris"
+    file = outputFile or "biblio_data.ris"
     try:
         with open(file, "w") as ris_file:
             rispy.dump(risEntries, ris_file)
@@ -279,40 +279,53 @@ def searchFolder(search_path):
 
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
 
-def checkOutputFileContents(file):
+def checkOutputFileExists(file):
     try:
-        foundFile = os.stat(file)
-    except:
-        print("Update: Output file does not yet exist. It will be created.")
-        return True
-    else:
-        if not foundFile.st_size == 0:
-            print("Warning: Output file is not empty")
-            text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
-            while True:
-                # If (1), just continue like normal, dumping will rewrite
-                if text == "1":
-                    print("Update: Will rewrite file contents")
-                    break
-                elif text == "3":
-                    break
-                elif text == "2":
-                    with open(file, "w") as ris_file:
-                        # Clears file contents
-                        ris_file.truncate(0)
-                    print("Update: Deleted file content")
-                    break
-                else:
-                    print("Error: Response is not recognized")
-                    text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
-                    print(text)
-                    print(isinstance(text, str))
-                
-            # Exit program if text == "3"
-            return False if text == "3" else True
-        else:
-            print("Update: Output file exists and is empty")
+        path = os.path.exists(file)
+        if path:
+            print("Update: Output path exists - default (last parameter of input path) will be used instead")
             return True
+        else:
+            print("Error: Output path does not exist")
+            return False
+    except:
+        print("Error: Output path does not exist - default (last parameter of input path) will be used instead")
+        return False
+
+def checkOutputFileContents(file):
+    if not os.stat(file).st_size == 0:
+        print("Warning: Output file is not empty")
+        text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+        while True:
+            # If (1), just continue like normal, dumping will rewrite
+            if text == "1":
+                print("Update: Will rewrite file contents")
+                break
+            elif text == "3":
+                break
+            elif text == "2":
+                with open(file, "w") as ris_file:
+                    # Clears file contents
+                    ris_file.truncate(0)
+                print("Update: Deleted file content")
+                break
+            else:
+                print("Error: Response is not recognized")
+                text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+                print(text)
+                print(isinstance(text, str))
+            
+        # Exit program if text == "3"
+        return False if text == "3" else True
+    else:
+        print("Update: Output file exists and is empty")
+        return True
+
+def getLastInputPathParameter(inputPath):
+    # Using current folder because program goes through all sub folders
+    folderName = os.path.basename(os.path.normpath(inputPath))
+    fileName = folderName + ".ris"
+    return fileName
 
 def getCommandLineArguments():
     parser = argparse.ArgumentParser(
@@ -330,33 +343,42 @@ def getCommandLineArguments():
     if args.outputPath and args.outputPath.endswith('.ris'):
         folderName = args.outputPath
     else:
-        # Using current folder because program goes through all sub folders
-        folderName = os.path.basename(os.path.normpath(args.inputPath))
-        folderName = folderName + ".ris"
+        folderName = getLastInputPathParameter(args.inputPath)
+    
+    print("Update: Using output file: ", folderName)
     return folderName, args.inputPath
 
 def main():
     outputFileName, inputFolderPath = getCommandLineArguments()
 
-    # Allows user to exit program if output file isn't empty and 
-    # they don't want the contents to change
-    if not checkOutputFileContents(outputFileName):
-        print("Update: Exiting program")
-        return
+    if not checkOutputFileExists(outputFileName):
+        outputFileName = getLastInputPathParameter(inputFolderPath)
+    else:
+        # Allows user to exit program if output file isn't empty and 
+        # they don't want the contents to change
+        if not checkOutputFileContents(outputFileName):
+            print("Update: Exiting program")
+            return
 
     paths = searchFolder(inputFolderPath)
     if not paths or len(paths) == 0:
         print("Update: No PDFs found")
         print("Update: No output files created")
+        print("Update: Finished")
         return
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
 
-    createBiblio(outputFileName)
+    if risEntries:
+        createBiblio(outputFileName)
+    else:
+        print("Update: There are no biblio entries to write")
 
     if anomalies:
         createAnomaliesFile()
+    else:
+        print("Update: There are no anomaly entries to write")
 
     print("Updated: Finished")
 
