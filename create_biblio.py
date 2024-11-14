@@ -314,8 +314,7 @@ def checkOutputFileContents(file):
             print("Update: Output file exists and is empty")
             return True
 
-
-def main():
+def getCommandLineArguments():
     parser = argparse.ArgumentParser(
         description="Creates ris file from PDF"
     )
@@ -334,8 +333,10 @@ def main():
         # Using current folder because program goes through all sub folders
         folderName = os.path.basename(os.path.normpath(args.inputPath))
         folderName = folderName + ".ris"
+    return folderName, args.inputPath
 
-    outputFileName = folderName
+def main():
+    outputFileName, inputFolderPath = getCommandLineArguments()
 
     # Allows user to exit program if output file isn't empty and 
     # they don't want the contents to change
@@ -343,7 +344,7 @@ def main():
         print("Update: Exiting program")
         return
 
-    paths = searchFolder(args.inputPath)
+    paths = searchFolder(inputFolderPath)
     if not paths or len(paths) == 0:
         print("Update: No PDFs found")
         print("Update: No output files created")
@@ -351,6 +352,7 @@ def main():
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
+
     createBiblio(outputFileName)
 
     if anomalies:
@@ -359,5 +361,3 @@ def main():
     print("Updated: Finished")
 
 main()
-#search_path = './foo'
-#print(searchFolder(search_path))
