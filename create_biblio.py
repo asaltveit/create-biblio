@@ -1,13 +1,14 @@
-import fitz  # PyMuPDF / fitz # For reading PDF
-import rispy # To create ris file
-import argparse # To collect arguments from command line
+import fitz # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
+import rispy # To create ris file # using rispy-0.9.0
+import argparse # To collect arguments from command line # using argparse-1.4.0
 import os # For finding PDFs in folder
 import re # For regex replacement
 
-# requirements.txt for easier setup
+# requirements.txt for easier setup - "pipreqs ." and "pip3 install -r requirements.txt"
+# TODO An error appears when the above is run "ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (traits)"
+# Added to Github
 # TODO Add tests
 # TODO Add README
-# TODO Add to Github
 
 # Searches given folder and all sub folders for PDFs
 # Collects citation info from JSTOR, Persee, or Middlebury Library formats
@@ -279,33 +280,39 @@ def searchFolder(search_path):
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
 
 def checkOutputFileContents(file):
-    if not os.stat(file).st_size == 0:
-        print("Warning: Output file is not empty")
-        text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
-        while True:
-            # If (1), just continue like normal, dumping will rewrite
-            if text == "1":
-                print("Update: Will rewrite file contents")
-                break
-            elif text == "3":
-                break
-            elif text == "2":
-                with open(file, "w") as ris_file:
-                    # Clears file contents
-                    ris_file.truncate(0)
-                print("Update: Deleted file content")
-                break
-            else:
-                print("Error: Response is not recognized")
-                text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
-                print(text)
-                print(isinstance(text, str))
-            
-        # Exit program if text == "3"
-        return False if text == "3" else True
-    else:
-        print("Update: Output file is empty")
+    try:
+        foundFile = os.stat(file)
+    except:
+        print("Update: Output file does not yet exist. It will be created.")
         return True
+    else:
+        if not foundFile.st_size == 0:
+            print("Warning: Output file is not empty")
+            text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+            while True:
+                # If (1), just continue like normal, dumping will rewrite
+                if text == "1":
+                    print("Update: Will rewrite file contents")
+                    break
+                elif text == "3":
+                    break
+                elif text == "2":
+                    with open(file, "w") as ris_file:
+                        # Clears file contents
+                        ris_file.truncate(0)
+                    print("Update: Deleted file content")
+                    break
+                else:
+                    print("Error: Response is not recognized")
+                    text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+                    print(text)
+                    print(isinstance(text, str))
+                
+            # Exit program if text == "3"
+            return False if text == "3" else True
+        else:
+            print("Update: Output file exists and is empty")
+            return True
 
 
 def main():
@@ -326,8 +333,9 @@ def main():
     else:
         # Using current folder because program goes through all sub folders
         folderName = os.path.basename(os.path.normpath(args.inputPath))
+        folderName = folderName + ".ris"
 
-    outputFileName = folderName + ".ris"
+    outputFileName = folderName
 
     # Allows user to exit program if output file isn't empty and 
     # they don't want the contents to change
@@ -336,6 +344,10 @@ def main():
         return
 
     paths = searchFolder(args.inputPath)
+    if not paths or len(paths) == 0:
+        print("Update: No PDFs found")
+        print("Update: No output files created")
+        return
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
@@ -347,3 +359,5 @@ def main():
     print("Updated: Finished")
 
 main()
+#search_path = './foo'
+#print(searchFolder(search_path))
