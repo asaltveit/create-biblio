@@ -1,12 +1,13 @@
-import fitz # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
-import rispy # To create ris file # using rispy-0.9.0
-import argparse # To collect arguments from command line # using argparse-1.4.0
-import os # For finding PDFs in folder
-import re # For regex replacement
+import fitz  # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
+import rispy  # To create ris file # using rispy-0.9.0
+import argparse  # To collect arguments from command line # using argparse-1.4.0
+import os  # For finding PDFs in folder
+import re  # For regex replacement
 
 # requirements.txt for easier setup - "pipreqs ." and "pip3 install -r requirements.txt"
 # TODO An error appears when the above is run "ERROR: ERROR: Failed to build installable wheels for some pyproject.toml based projects (traits)"
 # Added to Github
+# Added dev tools
 # TODO Add tests
 # TODO Add README
 
@@ -16,6 +17,7 @@ import re # For regex replacement
 
 anomalies = []
 risEntries = []
+
 
 def createBiblio(outputFile=""):
     print("Update: Creating RIS file")
@@ -38,11 +40,11 @@ def findInfo(pdf_path):
     # page.search_for returns a list of location rectangles
 
     # JSTOR
-    sourceRec = page.search_for('Source')
+    sourceRec = page.search_for("Source")
     # Persee/French
-    citeThisDocRec = page.search_for('Citer ce document') # Persee is always French
+    citeThisDocRec = page.search_for("Citer ce document")  # Persee is always French
     # Middlebury books
-    journalTitleRec = page.search_for('Journal Title')
+    journalTitleRec = page.search_for("Journal Title")
 
     # Converts to RIS format (seems easiest)
     # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
@@ -57,7 +59,10 @@ def findInfo(pdf_path):
         print("Update: PDF is from Middlebury Library")
         findInfoMiddleburyBook(page, journalTitleRec[0], pdf_path)
     else:
-        print("Error: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ", pdf_path)
+        print(
+            "Error: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
+            pdf_path,
+        )
         findAnyInfo(page)
 
 
@@ -69,7 +74,7 @@ def createAnomaliesFile():
     print("Update: Creating anomalies.txt file")
     try:
         with open("anomalies.txt", "w") as text_file:
-           text_file.write(anomalies) 
+            text_file.write(anomalies)
     except Exception as e:
         print("Error: Writing to anomalies.txt file failed: ", e)
     else:
@@ -80,47 +85,56 @@ def createAnomaliesFile():
 def findInfoJSTOR(page, sourceRec, pdf_path):
     # Reminder: Any field may be missing
 
-    ISBN = page.search_for('ISBN')
+    ISBN = page.search_for("ISBN")
     if ISBN:
         print("Info: " + pdf_path + " has ISBN")
         output = {"type_of_reference": "BOOK"}
     else:
         output = {"type_of_reference": "JOUR"}
-    
+
     # Rectangles containing the searched for strings
-    publishedByRec = page.search_for('Published by')[0]
-    authorRec = page.search_for('Author(s):')[0]
+    publishedByRec = page.search_for("Published by")[0]
+    authorRec = page.search_for("Author(s):")[0]
 
     # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
-    text = page.get_text("text", clip=fitz.Rect(sourceRec.x0, sourceRec.y0, page.rect.x1, publishedByRec.y0))
+    text = page.get_text(
+        "text",
+        clip=fitz.Rect(sourceRec.x0, sourceRec.y0, page.rect.x1, publishedByRec.y0),
+    )
     # Remove the search string itself from the extracted text
-    text = text.replace('Source:', "", 1).strip().split(', ')
+    text = text.replace("Source:", "", 1).strip().split(", ")
 
     # Parse text
-    journal = text[0].split('(')[0].strip() # remove '(year)'
+    journal = text[0].split("(")[0].strip()  # remove '(year)'
     output["journal_name"] = journal
     for item in text[1:]:
-        if item.startswith('Vol.'):
-            volume = item.replace('Vol.', "", 1).strip()
-            volume = re.sub(' \n', '', volume).split('(')[0]
+        if item.startswith("Vol."):
+            volume = item.replace("Vol.", "", 1).strip()
+            volume = re.sub(" \n", "", volume).split("(")[0]
             output["volume"] = volume
-        if item.startswith('pp.'):
+        if item.startswith("pp."):
             pages = item
-            startPage, endPage = pages.strip('pp. ').split('-')
+            startPage, endPage = pages.strip("pp. ").split("-")
             output["start_page"] = startPage
             output["end_page"] = endPage
-        if item.startswith('1') or item.startswith('2'):
+        if item.startswith("1") or item.startswith("2"):
             year = item
-            year = year.strip(')')
+            year = year.strip(")")
             output["year"] = year
-    
+
     # starting from the coordinates of top of page, stopping before "Author"
-    title = page.get_text("text", clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, authorRec.y0)).strip()
-    output["title"] = title # TODO if no title, it'll break the ris file, should there be a check here?
-    
+    title = page.get_text(
+        "text", clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, authorRec.y0)
+    ).strip()
+    output[
+        "title"
+    ] = title  # TODO if no title, it'll break the ris file, should there be a check here?
+
     # starting from the coordinates of "Author", stopping before "Source"
-    author = page.get_text("text", clip=fitz.Rect(authorRec.x0, authorRec.y0, page.rect.x1, sourceRec.y0))
-    author = author.replace('Author(s):', "", 1).strip().split(',')
+    author = page.get_text(
+        "text", clip=fitz.Rect(authorRec.x0, authorRec.y0, page.rect.x1, sourceRec.y0)
+    )
+    author = author.replace("Author(s):", "", 1).strip().split(",")
     output["authors"] = author
 
     risEntries.append(output)
@@ -129,7 +143,7 @@ def findInfoJSTOR(page, sourceRec, pdf_path):
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Reminder: Any field may be missing
-    ISBN = page.search_for('ISBN')
+    ISBN = page.search_for("ISBN")
     if ISBN:
         print("Info: " + pdf_path + " has ISBN")
         output = {"type_of_reference": "BOOK"}
@@ -137,47 +151,52 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
         output = {"type_of_reference": "JOUR"}
 
     # If the string is shorter like 'http', doi will be missing
-    httpRec = page.search_for('https://www')[0]
+    httpRec = page.search_for("https://www")[0]
     # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
-    section = page.get_text("text", clip=fitz.Rect(citeThisDocRec.x0, citeThisDocRec.y0, page.rect.x1, httpRec.y0))
+    section = page.get_text(
+        "text",
+        clip=fitz.Rect(citeThisDocRec.x0, citeThisDocRec.y0, page.rect.x1, httpRec.y0),
+    )
     # Remove the search string itself from the extracted text
-    section = section.replace('Citer ce document / Cite this document :', "", 1).strip()
-    citation, doi = section.split(';')
-    citation = citation.split('. ')
+    section = section.replace("Citer ce document / Cite this document :", "", 1).strip()
+    citation, doi = section.split(";")
+    citation = citation.split(". ")
 
-     # Parse text
+    # Parse text
 
-    doi = doi.strip('\ndoi : ')
+    doi = doi.strip("\ndoi : ")
     output["doi"] = doi
 
-    authors = citation[0].split(', ')
+    authors = citation[0].split(", ")
     reversedAuthors = []
     for author in authors:
-        author = author.split(' ')
-        author.reverse() # author is backwards 'lastname firstname'
+        author = author.split(" ")
+        author.reverse()  # author is backwards 'lastname firstname'
         author = " ".join(author)
         reversedAuthors.append(author)
     output["authors"] = reversedAuthors
 
-    title = citation[1] # Title will be strange if authors are missing
+    title = citation[1]  # Title will be strange if authors are missing
     output["title"] = title
 
     for index in range(2, len(citation)):
         item = citation[index]
-        if item.startswith('In: '):
-            output["journal_name"] = item.strip('In: ')
-        if citation[index-1].startswith('pp'):
+        if item.startswith("In: "):
+            output["journal_name"] = item.strip("In: ")
+        if citation[index - 1].startswith("pp"):
             pages = item
-            startPage, endPage = re.sub('\n', '', pages).split('-') # 'startPage-\nendPage;'
+            startPage, endPage = re.sub("\n", "", pages).split(
+                "-"
+            )  # 'startPage-\nendPage;'
             output["start_page"] = startPage.strip()
-            output["end_page"] = endPage.strip(';')
-        elif item.startswith('1') or item.startswith('2'):
-            parts = item.split(', ')
+            output["end_page"] = endPage.strip(";")
+        elif item.startswith("1") or item.startswith("2"):
+            parts = item.split(", ")
             for part in parts:
-                if part.startswith('tome'):
+                if part.startswith("tome"):
                     output["volume"] = part
                 else:
-                     output["year"] = part.strip(')')
+                    output["year"] = part.strip(")")
 
     risEntries.append(output)
 
@@ -185,7 +204,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 # Assumes all sections are present, whether they have info or not
 def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
     # Reminder: Any field may be missing
-    ISBN = page.search_for('ISBN')
+    ISBN = page.search_for("ISBN")
     if ISBN:
         print("Info: " + pdf_path + " has ISBN")
         output = {"type_of_reference": "BOOK"}
@@ -193,51 +212,81 @@ def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
         output = {"type_of_reference": "JOUR"}
 
     # For vertical limits
-    volumeRec = page.search_for('Volume')[0]
-    issueRec = page.search_for('Issue')[0]
-    monthYearRec = page.search_for('Month/Year')[0]
-    pagesRec = page.search_for('Pages')[0]
+    volumeRec = page.search_for("Volume")[0]
+    issueRec = page.search_for("Issue")[0]
+    monthYearRec = page.search_for("Month/Year")[0]
+    pagesRec = page.search_for("Pages")[0]
     # Fitz misreading test files' Article as Artide
-    articleAuthorList = page.search_for('Artide Author') or page.search_for('Article Author')
+    articleAuthorList = page.search_for("Artide Author") or page.search_for(
+        "Article Author"
+    )
     authorRec = articleAuthorList[0]
-    titleList = page.search_for('Artide Title') or page.search_for('Article Title')
+    titleList = page.search_for("Artide Title") or page.search_for("Article Title")
     titleRec = titleList[0]
     # For horizontal right limit
-    sentRec = page.search_for('SENT')[0]
+    sentRec = page.search_for("SENT")[0]
 
     # Parse text
 
-    title = page.get_text("text", clip=fitz.Rect(titleRec.x0, titleRec.y0, sentRec.x1, page.rect.y1))
+    title = page.get_text(
+        "text", clip=fitz.Rect(titleRec.x0, titleRec.y0, sentRec.x1, page.rect.y1)
+    )
     # Will only remove if present
-    title = title.replace('Artide Title:', "", 1).replace('Article Title:', "", 1).replace('SENT', "", 1).strip()
-    title = re.sub('\n', '', title)
+    title = (
+        title.replace("Artide Title:", "", 1)
+        .replace("Article Title:", "", 1)
+        .replace("SENT", "", 1)
+        .strip()
+    )
+    title = re.sub("\n", "", title)
     if not title:
         print("Error: title is missing from " + pdf_path)
         print("Error: title is required for RIS file, ignoring")
         return
     else:
         output["title"] = title
-    
+
     # Extract text from the page, starting from the coordinates of "Journal Title", stopping before "Volume"
-    journal = page.get_text("text", clip=fitz.Rect(journalTitleRec.x0, journalTitleRec.y0, sentRec.x1, volumeRec.y0))
+    journal = page.get_text(
+        "text",
+        clip=fitz.Rect(
+            journalTitleRec.x0, journalTitleRec.y0, sentRec.x1, volumeRec.y0
+        ),
+    )
     # Remove the search string itself from the extracted text
-    journal = journal.replace('Journal Title:', "", 1).split('\n')[0].strip()
-    
-    volume = page.get_text("text", clip=fitz.Rect(volumeRec.x0, volumeRec.y0, sentRec.x1, issueRec.y0))
-    volume = volume.replace('Volume:', "", 1).split('\n')[0].strip()
-    
-    issue = page.get_text("text", clip=fitz.Rect(issueRec.x0, issueRec.y0, sentRec.x1, monthYearRec.y0))
-    issue = issue.replace('Issue:', "", 1).split('\n')[0].strip()
-    
-    monthYear = page.get_text("text", clip=fitz.Rect(monthYearRec.x0, monthYearRec.y0, sentRec.x1, pagesRec.y0))
-    monthYear = monthYear.replace('Month/Year: ', "", 1).split('\n')[0].strip()
-    
-    pages = page.get_text("text", clip=fitz.Rect(pagesRec.x0, pagesRec.y0, sentRec.x1, authorRec.y0))
-    pages = pages.replace('Pages:', "", 1).split('\n')[0].strip()
-    
-    author = page.get_text("text", clip=fitz.Rect(authorRec.x0, authorRec.y0, sentRec.x1, titleRec.y0))
+    journal = journal.replace("Journal Title:", "", 1).split("\n")[0].strip()
+
+    volume = page.get_text(
+        "text", clip=fitz.Rect(volumeRec.x0, volumeRec.y0, sentRec.x1, issueRec.y0)
+    )
+    volume = volume.replace("Volume:", "", 1).split("\n")[0].strip()
+
+    issue = page.get_text(
+        "text", clip=fitz.Rect(issueRec.x0, issueRec.y0, sentRec.x1, monthYearRec.y0)
+    )
+    issue = issue.replace("Issue:", "", 1).split("\n")[0].strip()
+
+    monthYear = page.get_text(
+        "text",
+        clip=fitz.Rect(monthYearRec.x0, monthYearRec.y0, sentRec.x1, pagesRec.y0),
+    )
+    monthYear = monthYear.replace("Month/Year: ", "", 1).split("\n")[0].strip()
+
+    pages = page.get_text(
+        "text", clip=fitz.Rect(pagesRec.x0, pagesRec.y0, sentRec.x1, authorRec.y0)
+    )
+    pages = pages.replace("Pages:", "", 1).split("\n")[0].strip()
+
+    author = page.get_text(
+        "text", clip=fitz.Rect(authorRec.x0, authorRec.y0, sentRec.x1, titleRec.y0)
+    )
     # Will only remove if present
-    author = author.replace('Artide Author:', "", 1).replace('Article Author:', "", 1).split('\n')[0].strip()
+    author = (
+        author.replace("Artide Author:", "", 1)
+        .replace("Article Author:", "", 1)
+        .split("\n")[0]
+        .strip()
+    )
     author = author.split(", ")
 
     if journal:
@@ -247,21 +296,21 @@ def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
     if issue:
         output["issue"] = issue
     if monthYear:
-        monthYear = monthYear.split('/')
+        monthYear = monthYear.split("/")
         if len(monthYear) > 1:
             year = monthYear[1]
         else:
             year = monthYear[0]
         output["year"] = year
     if pages:
-        startPage, endPage = pages.split('-')
+        startPage, endPage = pages.split("-")
         output["start_page"] = startPage
         output["end_page"] = endPage
     if author:
         output["authors"] = author
-    
+
     risEntries.append(output)
-    
+
 
 def searchFolder(search_path):
     numPaths = 0
@@ -270,14 +319,16 @@ def searchFolder(search_path):
 
     for root, _, files in os.walk(search_path):
         for file in files:
-            if file.endswith('.pdf'):
+            if file.endswith(".pdf"):
                 numPaths += 1
                 paths.append(os.path.join(root, file))
-    
+
     print("Update: Found " + str(numPaths) + " paths")
     return paths
 
+
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
+
 
 def checkOutputFileExists(file):
     try:
@@ -286,16 +337,25 @@ def checkOutputFileExists(file):
             print("Update: Output path exists")
             return True
         else:
-            print("Error: Output path does not exist  - default (last parameter of input path) will be used instead")
+            print(
+                "Error: Output path does not exist  - default (last parameter of input path) will be used instead"
+            )
             return False
-    except:
-        print("Error: Output path does not exist - default (last parameter of input path) will be used instead")
+    except Exception as e:
+        print(
+            "Error: "
+            + e
+            + " - default (last parameter of input path) will be used instead"
+        )
         return False
+
 
 def checkOutputFileContents(file):
     if not os.stat(file).st_size == 0:
         print("Warning: Output file is not empty")
-        text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+        text = input(
+            "Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n"
+        )
         while True:
             # If (1), just continue like normal, dumping will rewrite
             if text == "1":
@@ -311,15 +371,18 @@ def checkOutputFileContents(file):
                 break
             else:
                 print("Error: Response is not recognized")
-                text = input("Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n")
+                text = input(
+                    "Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n"
+                )
                 print(text)
                 print(isinstance(text, str))
-            
+
         # Exit program if text == "3"
         return False if text == "3" else True
     else:
         print("Update: Output file exists and is empty")
         return True
+
 
 def getLastInputPathParameter(inputPath):
     # Using current folder because program goes through all sub folders
@@ -327,26 +390,36 @@ def getLastInputPathParameter(inputPath):
     fileName = folderName + ".ris"
     return fileName
 
+
 def getCommandLineArguments():
-    parser = argparse.ArgumentParser(
-        description="Creates ris file from PDF"
-    )
+    parser = argparse.ArgumentParser(description="Creates ris file from PDF")
     # Take input path from command line
-    parser.add_argument("--inputPath", required=True, type=str, help="Enter path of folder")
+    parser.add_argument(
+        "--inputPath", required=True, type=str, help="Enter path of folder"
+    )
     # Also take optional output path (which has to be .ris) from command line
-    parser.add_argument("--outputPath", required=False, type=str, default="", help="Enter path of RIS file (.ris)")
+    parser.add_argument(
+        "--outputPath",
+        required=False,
+        type=str,
+        default="",
+        help="Enter path of RIS file (.ris)",
+    )
     args = parser.parse_args()
 
-    if args.outputPath and not args.outputPath.endswith('.ris'):
-        print("Error: Output file must be .ris - default (last parameter of input path) will be used instead")
-    
-    if args.outputPath and args.outputPath.endswith('.ris'):
+    if args.outputPath and not args.outputPath.endswith(".ris"):
+        print(
+            "Error: Output file must be .ris - default (last parameter of input path) will be used instead"
+        )
+
+    if args.outputPath and args.outputPath.endswith(".ris"):
         folderName = args.outputPath
     else:
         folderName = getLastInputPathParameter(args.inputPath)
-    
+
     print("Update: Using output file: ", folderName)
     return folderName, args.inputPath
+
 
 def main():
     outputFileName, inputFolderPath = getCommandLineArguments()
@@ -354,7 +427,7 @@ def main():
     if not checkOutputFileExists(outputFileName):
         outputFileName = getLastInputPathParameter(inputFolderPath)
     else:
-        # Allows user to exit program if output file isn't empty and 
+        # Allows user to exit program if output file isn't empty and
         # they don't want the contents to change
         if not checkOutputFileContents(outputFileName):
             print("Update: Exiting program")
@@ -381,5 +454,6 @@ def main():
         print("Update: There are no anomaly entries to write")
 
     print("Updated: Finished")
+
 
 main()

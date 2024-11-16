@@ -1,5 +1,3 @@
 PyMuPDF
 rispy
 argparse
-os
-re
