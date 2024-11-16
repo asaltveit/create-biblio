@@ -1,7 +1,3 @@
-[tool.ruff]
-ignore = ["D203"]
-show-source = true
-
 [tool.black]
 target-version = ['py39']
 
