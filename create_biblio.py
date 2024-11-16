@@ -18,6 +18,11 @@ import re  # For regex replacement
 anomalies = []
 risEntries = []
 
+# Want any counts for resource type?
+numJSTOR = 0
+numPersee = 0
+numMiddlebury = 0
+
 
 def createBiblio(outputFile=""):
     print("Update: Creating RIS file")
@@ -33,7 +38,6 @@ def createBiblio(outputFile=""):
 
 
 def findInfo(pdf_path):
-    # TODO Want any counts for resource type?
     doc = fitz.open(pdf_path)
     page = doc[0]
 
@@ -73,6 +77,7 @@ def findAnyInfo(page, pdf_path):
 def createAnomaliesFile():
     print("Update: Creating anomalies.txt file")
     try:
+        # TODO: warn with response if anomalies.txt isn't empty?
         with open("anomalies.txt", "w") as text_file:
             text_file.write(anomalies)
     except Exception as e:
@@ -83,6 +88,10 @@ def createAnomaliesFile():
 
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, sourceRec, pdf_path):
+    # Keeping counts of types, just in case
+    global numJSTOR
+    numJSTOR += 1
+
     # Reminder: Any field may be missing
 
     ISBN = page.search_for("ISBN")
@@ -95,6 +104,19 @@ def findInfoJSTOR(page, sourceRec, pdf_path):
     # Rectangles containing the searched for strings
     publishedByRec = page.search_for("Published by")[0]
     authorRec = page.search_for("Author(s):")[0]
+
+    # starting from the coordinates of top of page, stopping before "Author"
+    title = page.get_text(
+        "text", clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, authorRec.y0)
+    ).strip()
+
+    # if no title, it'll break the ris file - put in anomalies instead
+    if not title:
+        print("Update: Didn't find title, adding to anomalies")
+        findAnyInfo(page, pdf_path)
+        return
+
+    output["title"] = title
 
     # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
     text = page.get_text(
@@ -122,14 +144,6 @@ def findInfoJSTOR(page, sourceRec, pdf_path):
             year = year.strip(")")
             output["year"] = year
 
-    # starting from the coordinates of top of page, stopping before "Author"
-    title = page.get_text(
-        "text", clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, authorRec.y0)
-    ).strip()
-    output[
-        "title"
-    ] = title  # TODO if no title, it'll break the ris file, should there be a check here?
-
     # starting from the coordinates of "Author", stopping before "Source"
     author = page.get_text(
         "text", clip=fitz.Rect(authorRec.x0, authorRec.y0, page.rect.x1, sourceRec.y0)
@@ -142,6 +156,10 @@ def findInfoJSTOR(page, sourceRec, pdf_path):
 
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
+    # Keeping counts of types, just in case
+    global numPersee
+    numPersee += 1
+
     # Reminder: Any field may be missing
     ISBN = page.search_for("ISBN")
     if ISBN:
@@ -177,6 +195,14 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     output["authors"] = reversedAuthors
 
     title = citation[1]  # Title will be strange if authors are missing
+
+    # This is unlikely to happen
+    # if no title, it'll break the ris file - put in anomalies instead
+    if not title:
+        print("Update: Didn't find title, adding to anomalies")
+        findAnyInfo(page, pdf_path)
+        return
+
     output["title"] = title
 
     for index in range(2, len(citation)):
@@ -203,6 +229,10 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 
 # Assumes all sections are present, whether they have info or not
 def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
+    # Keeping counts of types, just in case
+    global numMiddlebury
+    numMiddlebury += 1
+
     # Reminder: Any field may be missing
     ISBN = page.search_for("ISBN")
     if ISBN:
@@ -231,6 +261,13 @@ def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
     title = page.get_text(
         "text", clip=fitz.Rect(titleRec.x0, titleRec.y0, sentRec.x1, page.rect.y1)
     )
+
+    # if no title, it'll break the ris file - put in anomalies instead
+    if not title:
+        print("Update: Didn't find title, adding to anomalies")
+        findAnyInfo(page, pdf_path)
+        return
+
     # Will only remove if present
     title = (
         title.replace("Artide Title:", "", 1)
@@ -280,7 +317,7 @@ def findInfoMiddleburyBook(page, journalTitleRec, pdf_path):
     author = page.get_text(
         "text", clip=fitz.Rect(authorRec.x0, authorRec.y0, sentRec.x1, titleRec.y0)
     )
-    # Will only remove if present
+    # replace() will only remove if present
     author = (
         author.replace("Artide Author:", "", 1)
         .replace("Article Author:", "", 1)
@@ -329,7 +366,7 @@ def searchFolder(search_path):
 
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
 
-
+# TODO Can this and checkInputPathExists be made more reuseable?
 def checkOutputFileExists(file):
     try:
         path = os.path.exists(file)
@@ -338,7 +375,7 @@ def checkOutputFileExists(file):
             return True
         else:
             print(
-                "Error: Output path does not exist  - default (last parameter of input path) will be used instead"
+                "Error: Output path does not exist - default (last parameter of input path) will be used instead"
             )
             return False
     except Exception as e:
@@ -347,6 +384,20 @@ def checkOutputFileExists(file):
             + e
             + " - default (last parameter of input path) will be used instead"
         )
+        return False
+
+
+def checkInputPathExists(file):
+    try:
+        path = os.path.exists(file)
+        if path:
+            print("Update: Input path exists")
+            return True
+        else:
+            print("Error: Input path does not exist")
+            return False
+    except Exception as e:
+        print("Error: Cannot access input folder: " + e)
         return False
 
 
@@ -424,6 +475,12 @@ def getCommandLineArguments():
 def main():
     outputFileName, inputFolderPath = getCommandLineArguments()
 
+    # If no input path, there's nothing left to run
+    if not checkInputPathExists(inputFolderPath):
+        print("Update: Exiting program")
+        return
+
+    # If no output path, a default is used instead
     if not checkOutputFileExists(outputFileName):
         outputFileName = getLastInputPathParameter(inputFolderPath)
     else:
@@ -442,6 +499,11 @@ def main():
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
+
+    # Keeping counts of types, just in case
+    print("Update: There were ", str(numJSTOR), " PDFs from JSTOR")
+    print("Update: There were ", str(numPersee), " PDFs from Persee")
+    print("Update: There were ", str(numMiddlebury), " PDFs from Middlebury Library")
 
     if risEntries:
         createBiblio(outputFileName)
