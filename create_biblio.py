@@ -366,6 +366,7 @@ def searchFolder(search_path):
 
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
 
+
 # TODO Can this and checkInputPathExists be made more reuseable?
 def checkOutputFileExists(file):
     try:
