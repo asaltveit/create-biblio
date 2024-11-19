@@ -3,34 +3,36 @@ Creates a citation for each PDF in a given folder (and all sub-folders) and adds
 
 ## Set-up
 ### Install Prerequisites
-1. Clone this repo to your local computer:
+1. If you don't have git, you'll need to install it:
+- https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+2. Clone this repo to your local computer:
    ```bash
    git clone https://github.com/asaltveit/create-biblio.git
    ```
-2. Enter the project folder:
+3. Enter the project folder:
    ```bash
    cd create-biblio
    ```
-3. If you don't have Python3, install that:
+4. If you don't have Python3, install that:
 - For Mac users: https://www.python.org/downloads/macos/
 - For Windows users: https://www.python.org/downloads/windows/
 - For Linux/Unix users: https://www.python.org/downloads/source/
 - For other users: https://www.python.org/download/other/
-4. pip should be included with Python3, but if it isn't, see here:
+5. pip should be included with Python3, but if it isn't, see here:
 - https://pip.pypa.io/en/stable/installation/
-5. Create a virtual environment to install the dependencies in:
+6. Create a virtual environment to install the dependencies in:
    ```bash
    python3 -m venv .venv
    ```
-6. Start the virtual environment:
+7. Start the virtual environment:
    ```bash
    source .venv/bin/activate
    ```
-6. Install the package prerequisites for this project:
+8. Install the package prerequisites for this project:
    ```bash
    pip install -r requirements.txt
    ```
-7. If you're setting up for development, you can install both the program and dev requirements with:
+9. If you're setting up for development, you can install both the program and dev requirements with:
    ```bash
    pip install -r dev-requirements.txt
    ```
