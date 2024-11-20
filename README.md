@@ -2,7 +2,6 @@
 Creates a citation for each PDF in a given folder (and all sub-folders) and adds them to an RIS file which can be uploaded to Zotero and/or other programs which accept RIS format.
 
 ## Set-up
-### Install Prerequisites
 1. If you don't have git, you'll need to install it:
 - https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 2. Clone this repo to your local computer:
@@ -20,6 +19,18 @@ Creates a citation for each PDF in a given folder (and all sub-folders) and adds
 - For other users: https://www.python.org/download/other/
 5. pip should be included with Python3, but if it isn't, see here:
 - https://pip.pypa.io/en/stable/installation/
+
+### For Windows
+6. Create a virtual environment to install the dependencies in:
+   ```bash
+   python -m venv .venv
+   ```
+7. Start the virtual environment:
+   ```bash
+   .venv/bin/activate
+   ```
+
+### For every other operating system
 6. Create a virtual environment to install the dependencies in:
    ```bash
    python3 -m venv .venv
@@ -28,6 +39,8 @@ Creates a citation for each PDF in a given folder (and all sub-folders) and adds
    ```bash
    source .venv/bin/activate
    ```
+
+### Continuing for everyone
 8. Install the package prerequisites for this project:
    ```bash
    pip install -r requirements.txt
