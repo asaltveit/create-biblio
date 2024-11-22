@@ -67,7 +67,7 @@ def findInfo(pdf_path):
             "Error: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
             pdf_path,
         )
-        findAnyInfo(page)
+        findAnyInfo(page, pdf_path)
 
 
 def findAnyInfo(page, pdf_path):
@@ -79,7 +79,8 @@ def createAnomaliesFile():
     try:
         # TODO: warn with response if anomalies.txt isn't empty?
         with open("anomalies.txt", "w") as text_file:
-            text_file.write(anomalies)
+            print("in with open anomalies.txt")
+            text_file.write(str(anomalies))
     except Exception as e:
         print("Error: Writing to anomalies.txt file failed: ", e)
     else:
