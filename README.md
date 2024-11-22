@@ -65,7 +65,7 @@ Outputs:
 - anomalies.txt
 
 ### Notes
-- If the output file is not given, or does not exist, default uses the input path like "path/to/folder" -> folder.ris
+- If the output file name is not given, or does not exist, default creates the file name from the input path like "path/to/folder" -> folder.ris
 - If the output file exists and is not empty, you'll be asked whether to (1) write over the file, (2) delete the file contents, or (3) exit the program
 - The output file will include citation info for all PDFs that fit the structure from JSTOR, Persee, and the Middlebury Library. If a PDF doesn't fit one of those structures, it will be added to the anomalies.txt file.
 - The .ris file won't be written to if there are no citations to write.
