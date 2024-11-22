@@ -52,8 +52,14 @@ Creates a citation for each PDF in a given folder (and all sub-folders) and adds
 
 ## Run
 ```bash
-python3 create-biblio.py --inputPath="path/to/folder" --outputPath="optional/path/to/file.ris"
+python3 create_biblio.py --inputPath="path/to/folder" --outputPath="optional/path/to/file.ris"
 ```
+If you get a python error, try:
+```bash
+python create_biblio.py --inputPath="path/to/folder" --outputPath="optional/path/to/file.ris"
+```
+
+
 Outputs: 
 - file.ris
 - anomalies.txt
