@@ -429,8 +429,9 @@ def checkOutputFileContents(file):
 def getLastInputPathParameter(inputPath):
     # Using current folder because program goes through all sub folders
     folderName = os.path.basename(os.path.normpath(inputPath))
+    restOfPath = os.path.dirname(os.path.normpath(inputPath))
     fileName = folderName + ".ris"
-    return fileName
+    return os.path.join(restOfPath, fileName)
 
 
 def getCommandLineArguments():
