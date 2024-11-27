@@ -63,9 +63,10 @@ def findInfo(pdf_path):
         findInfoMiddleburyBook(page, pdf_path)
     else:
         print(
-            "Error: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
+            "Warn: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
             pdf_path,
         )
+        getInfoFromFileName(pdf_path)
         findAnyInfo(page, pdf_path)
 
 
@@ -73,11 +74,40 @@ def findAnyInfo(page, pdf_path):
     anomalies.append({"path": pdf_path, "info": page.get_text()})
 
 
+# TODO Go to here if the 3 formats don't work
+def getInfoFromFileName(file_path):
+    output = {}
+    file_name = os.path.basename(os.path.normpath(file_path))
+    # Remove .pdf
+    file_name = file_name.split(".")[0]
+    # Split on year
+    textSections = re.split(r"(?<!\d)\d{4}(?!\d)", file_name)
+    if len(textSections) == 2 and textSections[1]:
+        author, title = textSections
+        output["author"] = author
+        output["title"] = title
+    # If there was only text and year, nothing after
+    elif len(textSections) == 2:
+        title = textSections[0]
+        output.append(title)
+    elif len(textSections) > 2:
+        author = textSections[0]
+        title = textSections[1]
+        output["author"] = author
+        output["title"] = title
+    else:
+        output["title"] = file_name
+    year = re.findall(r"[0-9]{4}", file_name)
+    if len(year) >= 1:
+        output["year"] = year[0]
+    return output
+
+
 def createAnomaliesFile():
     print("Update: Creating anomalies.txt file")
     try:
-        # TODO: warn with response if anomalies.txt isn't empty?
-        with open("anomalies.txt", "w") as text_file:
+        # Need encoding for Windows
+        with open("anomalies.txt", "w", encoding="utf-8") as text_file:
             text_file.write(str(anomalies))
     except Exception as e:
         print("Error: Writing to anomalies.txt file failed: ", e)
@@ -132,8 +162,8 @@ def findInfoJSTOR(page, pdf_path):
             curStr += lis[i][0]
 
     if not infoLines:
-        print("Update: Didn't find title, adding to anomalies")
-        findAnyInfo(page, pdf_path)
+        print("Update: Didn't find title, searching file name")
+        getInfoFromFileName(pdf_path)
         numJSTOR -= 1
         return
 
@@ -215,8 +245,8 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     # This is unlikely to happen
     # if no title, it'll break the ris file - put in anomalies instead
     if not title:
-        print("Update: Didn't find title, adding to anomalies")
-        findAnyInfo(page, pdf_path)
+        print("Update: Didn't find title, searching file name")
+        getInfoFromFileName(pdf_path)
         numPersee -= 1
         return
 
@@ -302,8 +332,8 @@ def findInfoMiddleburyBook(page, pdf_path):
         if line.startswith("Artide Title:"):
             title = line.replace("Artide Title:", "", 1).strip()
             if not title:
-                print("Update: Didn't find title, adding to anomalies")
-                findAnyInfo(page, pdf_path)
+                print("Update: Didn't find title, searching file name")
+                getInfoFromFileName(pdf_path)
                 numMiddlebury -= 1
                 return
             output["title"] = line.replace("Artide Title:", "", 1).strip()
@@ -357,25 +387,22 @@ def searchFolder(search_path):
 # TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
 
 
-# TODO Can this and checkInputPathExists be made more reuseable?
-def checkOutputFileExists(file):
-    try:
-        path = os.path.exists(file)
-        if path:
-            print("Update: Output path exists")
-            return True
-        else:
-            print(
-                "Warn: Output path does not exist - default (last parameter of input path) will be used instead"
-            )
-            return False
-    except Exception as e:
-        print(
-            "Error: "
-            + e
-            + " - default (last parameter of input path) will be used instead"
-        )
-        return False
+def checkOutputFileType(file, inputPath):
+    if not file:
+        file = getLastInputPathParameter(inputPath)
+    if not file.endswith(".ris"):
+        return file.split(".")[0] + ".ris"
+    else:
+        return file
+
+
+# TODO Update readme to reflect where output file will go
+def getLastInputPathParameter(inputPath):
+    # Using current folder
+    folderName = os.path.basename(os.path.normpath(inputPath))
+    restOfPath = os.path.dirname(os.path.normpath(inputPath))
+    fileName = folderName + ".ris"
+    return os.path.join(restOfPath, fileName)
 
 
 def checkInputPathExists(file):
@@ -392,8 +419,11 @@ def checkInputPathExists(file):
         return False
 
 
-def checkOutputFileContents(file):
-    if not os.stat(file).st_size == 0:
+# Doesn't seem necessary - since it's in the input folder,
+# if it's written over, content is likely the same or more, not less
+def checkOutputFileContents(outputFileName, inputFolderPath):
+    outputFileName = checkOutputFileType(outputFileName)
+    if not os.stat(outputFileName).st_size == 0:
         print("Warning: Output file is not empty")
         text = input(
             "Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n"
@@ -406,7 +436,7 @@ def checkOutputFileContents(file):
             elif text == "3":
                 break
             elif text == "2":
-                with open(file, "w") as ris_file:
+                with open(outputFileName, "w") as ris_file:
                     # Clears file contents
                     ris_file.truncate(0)
                 print("Update: Deleted file content")
@@ -426,14 +456,6 @@ def checkOutputFileContents(file):
         return True
 
 
-def getLastInputPathParameter(inputPath):
-    # Using current folder because program goes through all sub folders
-    folderName = os.path.basename(os.path.normpath(inputPath))
-    restOfPath = os.path.dirname(os.path.normpath(inputPath))
-    fileName = folderName + ".ris"
-    return os.path.join(restOfPath, fileName)
-
-
 def getCommandLineArguments():
     parser = argparse.ArgumentParser(description="Creates ris file from PDF")
     # Take input path from command line
@@ -449,38 +471,18 @@ def getCommandLineArguments():
         help="Enter path of RIS file (.ris)",
     )
     args = parser.parse_args()
-
-    if args.outputPath and not args.outputPath.endswith(".ris"):
-        print(
-            "Warn: Output file must be .ris - default (last parameter of input path) will be used instead"
-        )
-
-    if args.outputPath and args.outputPath.endswith(".ris"):
-        folderName = args.outputPath
-    else:
-        folderName = getLastInputPathParameter(args.inputPath)
-
-    print("Update: Using output file: ", folderName)
-    return folderName, args.inputPath
+    return args.outputPath, args.inputPath
 
 
 def main():
-    outputFileName, inputFolderPath = getCommandLineArguments()
+    outputFilePath, inputFolderPath = getCommandLineArguments()
 
     # If no input path, there's nothing left to run
     if not checkInputPathExists(inputFolderPath):
         print("Update: Exiting program")
         return
 
-    # If no output path, a default is used instead
-    if not checkOutputFileExists(outputFileName):
-        outputFileName = getLastInputPathParameter(inputFolderPath)
-    else:
-        # Allows user to exit program if output file isn't empty and
-        # they don't want the contents to change
-        if not checkOutputFileContents(outputFileName):
-            print("Update: Exiting program")
-            return
+    outputFile = checkOutputFileType(outputFilePath, inputFolderPath)
 
     paths = searchFolder(inputFolderPath)
     if not paths or len(paths) == 0:
@@ -498,7 +500,7 @@ def main():
     print("Update: There were ", str(numMiddlebury), " PDFs from Middlebury Library")
 
     if risEntries:
-        createBiblio(outputFileName)
+        createBiblio(outputFile)
     else:
         print("Update: There are no biblio entries to write")
 
@@ -510,4 +512,7 @@ def main():
     print("Updated: Finished")
 
 
-main()
+# main()
+
+out = getInfoFromFileName("Levitan-DancingEndRope-1985.pdf")
+print(out)
