@@ -134,6 +134,7 @@ def findInfoJSTOR(page, pdf_path):
     if not infoLines:
         print("Update: Didn't find title, adding to anomalies")
         findAnyInfo(page, pdf_path)
+        numJSTOR -= 1
         return
 
     output["title"] = infoLines[0]
@@ -216,6 +217,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     if not title:
         print("Update: Didn't find title, adding to anomalies")
         findAnyInfo(page, pdf_path)
+        numPersee -= 1
         return
 
     output["title"] = title
@@ -302,6 +304,7 @@ def findInfoMiddleburyBook(page, pdf_path):
             if not title:
                 print("Update: Didn't find title, adding to anomalies")
                 findAnyInfo(page, pdf_path)
+                numMiddlebury -= 1
                 return
             output["title"] = line.replace("Artide Title:", "", 1).strip()
         if (
