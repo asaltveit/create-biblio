@@ -22,6 +22,7 @@ risEntries = []
 numJSTOR = 0
 numPersee = 0
 numMiddlebury = 0
+numOther = 0
 
 
 def createBiblio(outputFile):
@@ -46,24 +47,21 @@ def findInfo(pdf_path):
     # Persee/French
     citeThisDocRec = page.search_for("Citer ce document")  # Persee is always French
     # Middlebury books
-    journalTitleRec = page.search_for("Journal Title")
+    # journalTitleRec = page.search_for("Journal Title")
 
     # Converts to RIS format (seems easiest)
     # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
 
     if sourceRec:
-        print("Update: PDF is from JSTOR")
         findInfoJSTOR(page, pdf_path)
     elif citeThisDocRec:
-        print("Update: PDF is from Persee")
         findInfoPersee(page, citeThisDocRec[0], pdf_path)
-    elif journalTitleRec:
-        print("Update: PDF is from Middlebury Library")
-        findInfoMiddleburyBook(page, pdf_path)
+    # elif journalTitleRec:
+    # print("Update: PDF is from Middlebury Library")
+    # findInfoMiddleburyBook(page, pdf_path)
     else:
         print(
-            "Warn: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
-            pdf_path,
+            "Update: Didn't identify a known format (JSTOR, Persee, or Middlebury Library)"
         )
         output = getInfoFromFileName(pdf_path)
         print("output: ", output)
@@ -73,8 +71,9 @@ def findInfo(pdf_path):
         risEntries.append(moreOutput)
 
 
-# TODO Go to here if the 3 formats don't work
+# Go to here if the 3 known formats don't work
 def getInfoFromFileName(file_path):
+    print("Update: Collecting info from file name")
     output = {}
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
@@ -83,23 +82,24 @@ def getInfoFromFileName(file_path):
     textSections = re.split(r"(?<!\d)\d{4}(?!\d)", file_name)
     if len(textSections) == 2 and textSections[1]:
         author, title = textSections
-        output["author"] = author
-        output["title"] = title
+        output["author"] = author.strip()
+        output["title"] = title.strip()
         print("Update: author found")
         print("Update: article title found")
     # If there was only text and year, nothing after
     elif len(textSections) == 2:
         title = textSections[0]
-        output.append(title)
+        output["title"] = title.strip()
     elif len(textSections) > 2:
         author = textSections[0]
         title = textSections[1]
-        output["author"] = author
-        output["title"] = title
+        output["author"] = author.strip()
+        output["title"] = title.strip()
         print("Update: author found")
         print("Update: article title found")
     else:
-        output["title"] = file_name
+        # Strip is unlikely to do anything here, just to be safe?
+        output["title"] = file_name.strip()
         print("Update: article title found")
 
     year = re.findall(r"[0-9]{4}", file_name)
@@ -111,6 +111,8 @@ def getInfoFromFileName(file_path):
 
 
 def getInfoGeneral(page):
+    global numOther
+    numOther += 1
     # Get list of lines of text, with fonts and line size
     lis = []
     for i in page.get_text("dict")["blocks"]:
@@ -126,7 +128,7 @@ def getInfoGeneral(page):
                 )
                 lis.append(li)
         except KeyError:
-            print(" ")
+            pass
     # Get list of only relevant lines of text
     curStr = ""
     infoLines = []
@@ -143,85 +145,102 @@ def getInfoGeneral(page):
 
 
 def parseInfo(infoLines, output):
+    # TODO This update can be more clear
+    print("Update: Parsing info from a general format")
     for line in infoLines:
-        noLabelLine = line.split(":")[1].strip()
-        if line.startswith("TYPE:") or line.startswith("Type:"):
-            output["type_of_reference"] = noLabelLine.split(" ")[0]
-        elif line.startswith("ISBN:"):
-            output["type_of_reference"] = "BOOK"
-        else:
-            output["type_of_reference"] = "JOUR"
-        if (
-            line.startswith("Author(s):")
-            or line.startswith("Artide Author:")
-            or line.startswith("ARTICLE AUTHOR:")
-            or line.startswith("Article Author:")
-        ):
-            output["authors"] = noLabelLine.split(", ")
-        # JSTOR
-        if line.startswith("Source: "):
-            text = noLabelLine.split(", ")
-            output["journal_name"] = text[0].split("(")[0].strip()
-            for item in text[1:]:
-                if item.startswith("Vol."):
-                    volume = item.replace("Vol.", "", 1).strip()
-                    volume = re.sub(" \n", "", volume).split("(")[0]
-                    output["volume"] = volume
-                if item.startswith("1") or item.startswith("2"):
-                    year = item
-                    year = year.strip(")")
+        # Can't split on non-existent colon
+        if ":" in line:
+            noLabelLine = line.split(":")[1].strip(" ")
+            # Some labels are present without info attached
+            if noLabelLine:
+                if line.startswith("TYPE:") or line.startswith("Type:"):
+                    output["type_of_reference"] = noLabelLine.split(" ")[0]
+                elif line.startswith("ISBN:"):
+                    output["type_of_reference"] = "BOOK"
+                else:
+                    output["type_of_reference"] = "JOUR"
+                if (
+                    line.startswith("Author(s):")
+                    or line.startswith("Artide Author:")
+                    or line.startswith("ARTICLE AUTHOR:")
+                    or line.startswith("Article Author:")
+                ):
+                    # TODO Add to README - authors split by ','
+                    # some formats have last, first or first, last names
+                    print("authors: ", noLabelLine)
+                    authors = noLabelLine.split(", ")
+                    output["authors"] = [author.strip(" ") for author in authors]
+                # TODO Is this needed?
+                # JSTOR
+                if line.startswith("Source: "):
+                    text = noLabelLine.split(", ")
+                    output["journal_name"] = text[0].split("(")[0].strip()
+                    for item in text[1:]:
+                        if item.startswith("Vol."):
+                            volume = item.replace("Vol.", "", 1).strip()
+                            volume = re.sub(" \n", "", volume).split("(")[0]
+                            output["volume"] = volume
+                        if item.startswith("1") or item.startswith("2"):
+                            year = item
+                            year = year.strip(")")
+                            output["year"] = year
+                        if item.startswith("pp."):
+                            startPage, endPage = item.strip("pp. ").split("-")
+                            output["start_page"] = startPage
+                            output["end_page"] = endPage
+                    # TODO return here?
+                if (
+                    line.startswith("Vol.")
+                    or line.startswith("VOLUME:")
+                    or line.startswith("Volume:")
+                ):
+                    output["volume"] = noLabelLine
+                elif line.startswith("tome"):
+                    output["volume"] = line.strip("tome ")
+                if (
+                    line.startswith("Published By:")
+                    or line.startswith("Journal Name:")
+                    or line.startswith("Journal Title:")
+                    or line.startswith("JOURNAL TITLE:")
+                    or line.startswith("Journal:")
+                    or line.startswith("In:")
+                ):
+                    output["journal_name"] = noLabelLine
+                if line.startswith("Year:") or line.startswith("YEAR:"):
+                    output["year"] = noLabelLine
+                elif line.startswith("Month/Year:"):
+                    monthYear = noLabelLine.split("/")
+                    if len(monthYear) > 1:
+                        year = monthYear[1]
+                    else:
+                        year = monthYear[0]
                     output["year"] = year
-                if item.startswith("pp."):
-                    startPage, endPage = item.strip("pp. ").split("-")
-                    output["start_page"] = startPage
-                    output["end_page"] = endPage
-            # TODO return here?
-        if (
-            line.startswith("Vol.")
-            or line.startswith("VOLUME:")
-            or line.startswith("Volume:")
-        ):
-            output["volume"] = noLabelLine
-        elif line.startswith("tome"):
-            output["volume"] = line.strip("tome ")
-        if (
-            line.startswith("Published By:")
-            or line.startswith("Journal Name:")
-            or line.startswith("Journal Title:")
-            or line.startswith("JOURNAL TITLE:")
-            or line.startswith("Journal:")
-            or line.startswith("In:")
-        ):
-            output["journal_name"] = noLabelLine
-        if line.startswith("Year:") or line.startswith("YEAR:"):
-            output["year"] = noLabelLine
-        elif line.startswith("Month/Year:"):
-            monthYear = noLabelLine.split("/")
-            if len(monthYear) > 1:
-                year = monthYear[1]
-            else:
-                year = monthYear[0]
-            output["year"] = year
-        if (
-            line.startswith("Pages:")
-            or line.startswith("pp.")
-            or line.startswith("PAGES:")
-        ):
-            if "-" in noLabelLine:
-                startPage, endPage = noLabelLine.split("-")
-                output["start_page"] = startPage
-                output["end_page"] = endPage
-        if line.startswith("DOI:") or line.startswith("doi:"):
-            output["doi"] = noLabelLine
-        if line.startswith("Issue:") or line.startswith("ISSUE:"):
-            output["issue"] = noLabelLine
+                if (
+                    line.startswith("Pages:")
+                    or line.startswith("pp.")
+                    or line.startswith("PAGES:")
+                ):
+                    if "-" in noLabelLine:
+                        startPage, endPage = noLabelLine.split("-")
+                        output["start_page"] = startPage
+                        output["end_page"] = endPage
+                if line.startswith("DOI:") or line.startswith("doi:"):
+                    output["doi"] = noLabelLine
+                if line.startswith("Issue:") or line.startswith("ISSUE:"):
+                    print("issue: ", noLabelLine)
+                    if noLabelLine:
+                        output["issue"] = noLabelLine
+        else:
+            if line.startswith("tome"):
+                output["volume"] = line.strip("tome ")
+
+    return output
 
 
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, pdf_path):
     # Keeping counts of types, just in case
     global numJSTOR
-    numJSTOR += 1
 
     # Reminder: Any field may be missing
 
@@ -247,7 +266,7 @@ def findInfoJSTOR(page, pdf_path):
                 )
                 lis.append(li)
         except KeyError:
-            print(" ")
+            pass
     # Get list of only relevant lines of text
     keywords = ["Author(s):", "Source:", "Published"]
     j = 0
@@ -266,13 +285,16 @@ def findInfoJSTOR(page, pdf_path):
     if not infoLines:
         print("Update: Didn't find title, searching file name")
         getInfoFromFileName(pdf_path)
-        numJSTOR -= 1
         return
+    else:
+        print("Update: PDF is from JSTOR")
+        numJSTOR += 1
 
     output["title"] = infoLines[0]
     for line in infoLines[1:]:
         if line.startswith("Author(s):"):
-            output["authors"] = line[10:].split(", ")
+            authors = line[10:].split(", ")
+            output["authors"] = [author.strip(" ") for author in authors]
         if line.startswith("Source: "):
             text = line.replace("Source: ", "", 1).strip().split(", ")
             output["journal_name"] = text[0].split("(")[0].strip()
@@ -298,7 +320,6 @@ def findInfoJSTOR(page, pdf_path):
 def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Keeping counts of types, just in case
     global numPersee
-    numPersee += 1
 
     # Reminder: Any field may be missing
     ISBN = page.search_for("ISBN")
@@ -337,7 +358,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     authors = citation[0].split(", ")
     reversedAuthors = []
     for author in authors:
-        author = author.split(" ")
+        author = author.strip().split(" ")
         author.reverse()  # author is backwards 'lastname firstname'
         author = " ".join(author)
         reversedAuthors.append(author)
@@ -350,8 +371,10 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     if not title:
         print("Update: Didn't find title, searching file name")
         getInfoFromFileName(pdf_path)
-        numPersee -= 1
         return
+    else:
+        print("Update: PDF is from Persee")
+        numPersee += 1
 
     output["title"] = title
 
@@ -381,7 +404,6 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 def findInfoMiddleburyBook(page, pdf_path):
     # Keeping counts of types, just in case
     global numMiddlebury
-    numMiddlebury += 1
 
     # Reminder: Any field may be missing
     ISBN = page.search_for("ISBN")
@@ -406,7 +428,7 @@ def findInfoMiddleburyBook(page, pdf_path):
                     )
                     lis.append(li[0])
         except KeyError:
-            print("")
+            pass
     # Get list of only relevant lines of text
     keywords = [
         "Volume:",
@@ -437,8 +459,10 @@ def findInfoMiddleburyBook(page, pdf_path):
             if not title:
                 print("Update: Didn't find title, searching file name")
                 getInfoFromFileName(pdf_path)
-                numMiddlebury -= 1
                 return
+            else:
+                print("Update: PDF is from Middlebury Library")
+                numMiddlebury += 1
             output["title"] = line.replace("Artide Title:", "", 1).strip()
         if (
             line.startswith("Journal Title:")
@@ -453,7 +477,8 @@ def findInfoMiddleburyBook(page, pdf_path):
             line.startswith("Artide Author:")
             and line.replace("Artide Author:", "", 1).strip()
         ):
-            output["authors"] = line.replace("Artide Author:", "", 1).strip().split(",")
+            authors = line.replace("Artide Author:", "", 1).strip().split(",")
+            output["authors"] = [author.strip(" ") for author in authors]
         if (
             line.startswith("Month/Year:")
             and line.replace("Month/Year:", "", 1).strip()
@@ -559,6 +584,7 @@ def main():
     print("Update: There were ", str(numJSTOR), " PDFs from JSTOR")
     print("Update: There were ", str(numPersee), " PDFs from Persee")
     print("Update: There were ", str(numMiddlebury), " PDFs from Middlebury Library")
+    print("Update: There were ", str(numOther), " PDFs with unknown format")
 
     if risEntries:
         createBiblio(outputFile)

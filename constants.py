@@ -6,6 +6,7 @@ END_KEYWORDS = [
     "ISSN:",
     "Month:",
     "MONTH:",
+    "USER JOURNAL TITLE",
 ]
 KEYWORDS = [
     "Author(s):",
