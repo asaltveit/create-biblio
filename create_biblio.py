@@ -272,7 +272,7 @@ def findInfoJSTOR(page, pdf_path):
     output["title"] = infoLines[0]
     for line in infoLines[1:]:
         if line.startswith("Author(s):"):
-            output["authors"] = line[11:].split(", ")
+            output["authors"] = line[10:].split(", ")
         if line.startswith("Source: "):
             text = line.replace("Source: ", "", 1).strip().split(", ")
             output["journal_name"] = text[0].split("(")[0].strip()
@@ -370,7 +370,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
             parts = item.split(", ")
             for part in parts:
                 if part.startswith("tome"):
-                    output["volume"] = part
+                    output["volume"] = part.strip("tome ")
                 else:
                     output["year"] = part.strip(")")
 
