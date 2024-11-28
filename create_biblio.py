@@ -4,7 +4,9 @@ import argparse  # To collect arguments from command line # using argparse-1.4.0
 import os  # For finding PDFs in folder
 import re  # For regex replacement
 
-# requirements.txt for easier setup - "pipreqs ." and "pip3 install -r requirements.txt"
+from constants import END_KEYWORDS, KEYWORDS
+
+# Added requirements.txt for easier setup
 # Added to Github
 # Added dev tools
 # Added README
@@ -14,7 +16,6 @@ import re  # For regex replacement
 # Collects citation info from JSTOR, Persee, or Middlebury Library formats
 # Adds RIS foramt entries to a file
 
-anomalies = []
 risEntries = []
 
 # Want any counts for resource type?
@@ -23,12 +24,10 @@ numPersee = 0
 numMiddlebury = 0
 
 
-def createBiblio(outputFile=""):
+def createBiblio(outputFile):
     print("Update: Creating RIS file")
-    # TODO Will a default ever be needed here?
-    file = outputFile or "biblio_data.ris"
     try:
-        with open(file, "w") as ris_file:
+        with open(outputFile, "w") as ris_file:
             rispy.dump(risEntries, ris_file)
     except Exception as e:
         print("Error: Writing to RIS file failed: ", e)
@@ -66,12 +65,12 @@ def findInfo(pdf_path):
             "Warn: Can't identify which collection (JSTOR, Persee, Middlebury Library) PDF is from: ",
             pdf_path,
         )
-        getInfoFromFileName(pdf_path)
-        findAnyInfo(page, pdf_path)
-
-
-def findAnyInfo(page, pdf_path):
-    anomalies.append({"path": pdf_path, "info": page.get_text()})
+        output = getInfoFromFileName(pdf_path)
+        print("output: ", output)
+        info = getInfoGeneral(page)
+        moreOutput = parseInfo(info, output)
+        print("moreOutput: ", moreOutput)
+        risEntries.append(moreOutput)
 
 
 # TODO Go to here if the 3 formats don't work
@@ -86,6 +85,8 @@ def getInfoFromFileName(file_path):
         author, title = textSections
         output["author"] = author
         output["title"] = title
+        print("Update: author found")
+        print("Update: article title found")
     # If there was only text and year, nothing after
     elif len(textSections) == 2:
         title = textSections[0]
@@ -95,24 +96,123 @@ def getInfoFromFileName(file_path):
         title = textSections[1]
         output["author"] = author
         output["title"] = title
+        print("Update: author found")
+        print("Update: article title found")
     else:
         output["title"] = file_name
+        print("Update: article title found")
+
     year = re.findall(r"[0-9]{4}", file_name)
     if len(year) >= 1:
         output["year"] = year[0]
+        print("Update: year published found")
+
     return output
 
 
-def createAnomaliesFile():
-    print("Update: Creating anomalies.txt file")
-    try:
-        # Need encoding for Windows
-        with open("anomalies.txt", "w", encoding="utf-8") as text_file:
-            text_file.write(str(anomalies))
-    except Exception as e:
-        print("Error: Writing to anomalies.txt file failed: ", e)
-    else:
-        print("Update: Successfully wrote to anomalies.txt file")
+def getInfoGeneral(page):
+    # Get list of lines of text, with fonts and line size
+    lis = []
+    for i in page.get_text("dict")["blocks"]:
+        try:
+            lines = i["lines"]
+            for line in range(len(lines)):
+                li = list(
+                    (
+                        lines[line]["spans"][0]["text"],
+                        i["lines"][line]["spans"][0]["font"],
+                        round(i["lines"][line]["spans"][0]["size"]),
+                    )
+                )
+                lis.append(li)
+        except KeyError:
+            print(" ")
+    # Get list of only relevant lines of text
+    curStr = ""
+    infoLines = []
+    for i in range(len(lis)):
+        if lis[i][0].startswith(tuple(KEYWORDS)):
+            infoLines.append(curStr)
+            curStr = lis[i][0]
+        elif lis[i][0].startswith(tuple(END_KEYWORDS)):
+            infoLines.append(curStr)
+            curStr = ""
+        else:
+            curStr += lis[i][0]
+    return infoLines
+
+
+def parseInfo(infoLines, output):
+    for line in infoLines:
+        noLabelLine = line.split(":")[1].strip()
+        if line.startswith("TYPE:") or line.startswith("Type:"):
+            output["type_of_reference"] = noLabelLine.split(" ")[0]
+        elif line.startswith("ISBN:"):
+            output["type_of_reference"] = "BOOK"
+        else:
+            output["type_of_reference"] = "JOUR"
+        if (
+            line.startswith("Author(s):")
+            or line.startswith("Artide Author:")
+            or line.startswith("ARTICLE AUTHOR:")
+            or line.startswith("Article Author:")
+        ):
+            output["authors"] = noLabelLine.split(", ")
+        # JSTOR
+        if line.startswith("Source: "):
+            text = noLabelLine.split(", ")
+            output["journal_name"] = text[0].split("(")[0].strip()
+            for item in text[1:]:
+                if item.startswith("Vol."):
+                    volume = item.replace("Vol.", "", 1).strip()
+                    volume = re.sub(" \n", "", volume).split("(")[0]
+                    output["volume"] = volume
+                if item.startswith("1") or item.startswith("2"):
+                    year = item
+                    year = year.strip(")")
+                    output["year"] = year
+                if item.startswith("pp."):
+                    startPage, endPage = item.strip("pp. ").split("-")
+                    output["start_page"] = startPage
+                    output["end_page"] = endPage
+            # TODO return here?
+        if (
+            line.startswith("Vol.")
+            or line.startswith("VOLUME:")
+            or line.startswith("Volume:")
+        ):
+            output["volume"] = noLabelLine
+        if (
+            line.startswith("Published By:")
+            or line.startswith("Journal Name:")
+            or line.startswith("Journal Title:")
+            or line.startswith("JOURNAL TITLE:")
+            or line.startswith("Journal:")
+            or line.startswith("In:")
+        ):
+            output["journal_name"] = noLabelLine
+        if line.startswith("Year:") or line.startswith("YEAR:"):
+            output["year"] = noLabelLine
+        elif line.startswith("Month/Year:"):
+            monthYear = noLabelLine.split("/")
+            if len(monthYear) > 1:
+                year = monthYear[1]
+            else:
+                year = monthYear[0]
+            output["year"] = year
+        if (
+            line.startswith("Pages:")
+            or line.startswith("pp.")
+            or line.startswith("PAGES:")
+        ):
+            if "-" in noLabelLine:
+                startPage, endPage = noLabelLine.split("-")
+                output["start_page"] = startPage
+                output["end_page"] = endPage
+        if line.startswith("DOI:") or line.startswith("doi:"):
+            output["doi"] = noLabelLine
+        if line.startswith("Issue:") or line.startswith("ISSUE:"):
+            output["issue"] = noLabelLine
 
 
 # Assumes all sections are present, whether they have info or not
@@ -229,7 +329,8 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Parse text
 
     doi = doi.strip("\ndoi : ")
-    output["doi"] = doi
+    if doi:
+        output["doi"] = doi
 
     authors = citation[0].split(", ")
     reversedAuthors = []
@@ -384,9 +485,6 @@ def searchFolder(search_path):
     return paths
 
 
-# TODO Can this be zipped? - to include tests and test folders, perhaps an output folder?
-
-
 def checkOutputFileType(file, inputPath):
     if not file:
         file = getLastInputPathParameter(inputPath)
@@ -417,43 +515,6 @@ def checkInputPathExists(file):
     except Exception as e:
         print("Error: Cannot access input folder: " + e)
         return False
-
-
-# Doesn't seem necessary - since it's in the input folder,
-# if it's written over, content is likely the same or more, not less
-def checkOutputFileContents(outputFileName, inputFolderPath):
-    outputFileName = checkOutputFileType(outputFileName)
-    if not os.stat(outputFileName).st_size == 0:
-        print("Warning: Output file is not empty")
-        text = input(
-            "Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n"
-        )
-        while True:
-            # If (1), just continue like normal, dumping will rewrite
-            if text == "1":
-                print("Update: Will rewrite file contents")
-                break
-            elif text == "3":
-                break
-            elif text == "2":
-                with open(outputFileName, "w") as ris_file:
-                    # Clears file contents
-                    ris_file.truncate(0)
-                print("Update: Deleted file content")
-                break
-            else:
-                print("Error: Response is not recognized")
-                text = input(
-                    "Should the file contents be (1) written over? Or (2) deleted? Or (3) do you want to exit the program?\n"
-                )
-                print(text)
-                print(isinstance(text, str))
-
-        # Exit program if text == "3"
-        return False if text == "3" else True
-    else:
-        print("Update: Output file exists and is empty")
-        return True
 
 
 def getCommandLineArguments():
@@ -503,11 +564,6 @@ def main():
         createBiblio(outputFile)
     else:
         print("Update: There are no biblio entries to write")
-
-    if anomalies:
-        createAnomaliesFile()
-    else:
-        print("Update: There are no anomaly entries to write")
 
     print("Updated: Finished")
 
