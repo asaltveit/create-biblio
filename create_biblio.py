@@ -182,6 +182,8 @@ def parseInfo(infoLines, output):
             or line.startswith("Volume:")
         ):
             output["volume"] = noLabelLine
+        elif line.startswith("tome"):
+            output["volume"] = line.strip("tome ")
         if (
             line.startswith("Published By:")
             or line.startswith("Journal Name:")
@@ -344,7 +346,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     title = citation[1]  # Title will be strange if authors are missing
 
     # This is unlikely to happen
-    # if no title, it'll break the ris file - put in anomalies instead
+    # if no title, it'll break the ris file - use file name for info instead
     if not title:
         print("Update: Didn't find title, searching file name")
         getInfoFromFileName(pdf_path)
@@ -496,11 +498,9 @@ def checkOutputFileType(file, inputPath):
 
 # TODO Update readme to reflect where output file will go
 def getLastInputPathParameter(inputPath):
-    # Using current folder
     folderName = os.path.basename(os.path.normpath(inputPath))
-    restOfPath = os.path.dirname(os.path.normpath(inputPath))
     fileName = folderName + ".ris"
-    return os.path.join(restOfPath, fileName)
+    return os.path.join(inputPath, fileName)
 
 
 def checkInputPathExists(file):
@@ -568,7 +568,4 @@ def main():
     print("Updated: Finished")
 
 
-# main()
-
-out = getInfoFromFileName("Levitan-DancingEndRope-1985.pdf")
-print(out)
+main()

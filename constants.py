@@ -14,6 +14,7 @@ KEYWORDS = [
     "Volume:",
     "Vol.",
     "VOLUME:",
+    "tome",
     "Issue:",
     "ISSUE:",
     "Month/Year:",
