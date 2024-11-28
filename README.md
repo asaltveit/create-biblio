@@ -1,6 +1,8 @@
 # Create Biblio
 Creates a citation for each PDF in a given folder (and all sub-folders) and adds them to an RIS file which can be uploaded to Zotero and/or other programs which accept RIS format.
 
+Any output file may need to be cleaned up by the user.
+
 ## Set-up
 1. If you don't have git, you'll need to install it:
 - https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
@@ -62,17 +64,16 @@ python create_biblio.py --inputPath="path/to/folder" --outputPath="optional/path
 
 Outputs: 
 - file.ris
-- anomalies.txt
 
 ### Notes
-- If the output file name is not given, or does not exist, default creates the file name from the input path like "path/to/folder" -> folder.ris
-- If the output file exists and is not empty, you'll be asked whether to (1) write over the file, (2) delete the file contents, or (3) exit the program
-- The output file will include citation info for all PDFs that fit the structure from JSTOR, Persee, and the Middlebury Library. If a PDF doesn't fit one of those structures, it will be added to the anomalies.txt file.
+- If the output file name is not given, default creates the file name from the input path like "path/to/folder" -> folder.ris
+- The output file will be placed in the input folder
+- The output file will include citation info for all PDFs.
 - The .ris file won't be written to if there are no citations to write.
-- The anomalies.txt file won't be written to if there are no anomalies.
+
 
 ## Further Work
 - A full set of unit tests
-- Additional PDF format types and output file types
+- Additional output file types
 
 
