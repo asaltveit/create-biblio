@@ -27,7 +27,6 @@ anomalies = []
 # Want any counts for resource type?
 numJSTOR = 0
 numPersee = 0
-numMiddlebury = 0
 numOther = 0
 numFileName = 0
 
@@ -203,8 +202,8 @@ def main():
     # Keeping counts of types, just in case
     print("Update: There were ", str(numJSTOR), " PDFs from JSTOR")
     print("Update: There were ", str(numPersee), " PDFs from Persee")
-    print("Update: There were ", str(numMiddlebury), " PDFs from Middlebury Library")
     print("Update: There were ", str(numOther), " PDFs with unknown format")
+    print("Update: Searched file names for info for ", str(numOther), " PDFs")
 
     if risEntries:
         createBiblio(outputFile)

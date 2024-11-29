@@ -15,8 +15,8 @@ def getInfoFromFileName(file_path):
         author, title = textSections
         output["authors"] = [author.strip()]
         output["title"] = title.strip()
-        print("Update: author found")
-        print("Update: article title found")
+        print("Update: Author found")
+        print("Update: Article title found")
     # If there was only text and year, nothing after
     elif len(textSections) == 2:
         title = textSections[0]
@@ -26,17 +26,17 @@ def getInfoFromFileName(file_path):
         title = textSections[1]
         output["authors"] = [author.strip()]
         output["title"] = title.strip()
-        print("Update: author found")
-        print("Update: article title found")
+        print("Update: Author found")
+        print("Update: Article title found")
     else:
         # Strip is unlikely to do anything here, just to be safe?
         output["title"] = file_name.strip()
-        print("Update: article title found")
+        print("Update: Article title found")
 
     year = re.findall(r"[0-9]{4}", file_name)
     if len(year) >= 1:
         output["year"] = year[0]
-        print("Update: year published found")
+        print("Update: Year published found")
 
     return output, 2
 
