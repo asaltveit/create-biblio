@@ -2,7 +2,7 @@ import fitz  # PyMuPDF / fitz # For reading PDF
 import re
 import os
 
-
+# Has tests
 def getInfoFromFileName(file_path):
     print("Update: Collecting info from file name")
     output = {}
@@ -168,7 +168,8 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     if not title:
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
-        return getInfoFromFileName(pdf_path), 0
+        # Returned number will come from getInfoFromFileName
+        return getInfoFromFileName(pdf_path)
     else:
         print("Update: PDF is from Persee")
 
@@ -245,7 +246,8 @@ def findInfoJSTOR(page, pdf_path):
     if not infoLines:
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
-        return getInfoFromFileName(pdf_path), 0
+        # Returned number will come from getInfoFromFileName
+        return getInfoFromFileName(pdf_path)
     else:
         print("Update: PDF is from JSTOR")
 

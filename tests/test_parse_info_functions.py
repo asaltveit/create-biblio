@@ -53,3 +53,31 @@ def test_no_year():
         },
         2,
     )
+
+
+# Mock tools:
+# with mock.patch('os.walk') as mockwalk:
+# mockwalk.return_value = [
+# ('/foo', ('bar',), ('baz',)),
+# ('/foo/bar', (), ('spam', 'eggs')),
+# ]
+
+# @mock.patch('os.system')
+# def test_my_function(os_system):
+# type: (unittest.mock.Mock) -> None
+# my_function("/path/to/dir")
+# os_system.assert_called_once_with('ls /path/to/dir')
+
+# @pytest.mark.parametrize("earned,spent,expected", [
+# (30, 10, 20),
+# (20, 2, 18),
+# ])
+
+# CI pipeline:
+# https://semaphoreci.com/community/tutorials/testing-python-applications-with-pytest
+
+# Faker:
+# from faker import Faker
+# fake = Faker()
+
+# pip install Faker
