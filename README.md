@@ -49,7 +49,7 @@ Any output file may need to be cleaned up by the user.
    ```
 9. If you're setting up for development, you can install both the program and dev requirements with:
    ```bash
-   pip install -r dev-requirements.txt
+   pip install -r requirements-dev.txt
    ```
 
 ## Run
