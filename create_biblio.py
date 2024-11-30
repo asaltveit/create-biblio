@@ -214,3 +214,13 @@ def main():
 
 
 main()
+# file_path = "../test/Pellegrin 1957 Les manuscrits de Loup de Ferrières.pdf"
+# doc = fitz.open(file_path)
+# page = doc[0]
+# print("page: ", page)
+# i, _ = getInfoFromFileName(file_path)
+# print("file-name-info: ", i)
+# info = getInfoGeneral(page)
+# print("infoLines: ", info)
+# output = parseInfoGeneral(info, i)
+# print("output: ", output)
