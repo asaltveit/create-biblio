@@ -29,7 +29,7 @@ Any output file may need to be cleaned up by the user.
    ```
 7. Start the virtual environment:
    ```bash
-   .venv/bin/activate
+   .venv/Scripts/activate
    ```
 
 ### For every other operating system
