@@ -1,8 +1,10 @@
 import pytest
 from faker import Faker
+import fitz
 from parse_info_functions import (
     getInfoFromFileName,
     parseInfoGeneral,
+    findInfoJSTOR,
 )
 
 fake = Faker()
@@ -87,6 +89,7 @@ infolines_middlebury_all_caps = (
     {"authors": ["Zurli"], "title": "Il cod Vindobonensis Palatinus", "year": "1998"},
     infolines_middlebury_all_caps_expected,
 )
+infolines_jstor = []
 no_infolines = ([], {"title": "blah, blah, blah"}, {"title": "blah, blah, blah"})
 # Persee - not working
 # infolines_persee_output = {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957'}
@@ -105,7 +108,33 @@ def test_parseInfoGeneral(inputLines, output, expected):
     assert parseInfoGeneral(inputLines, output) == expected
 
 
-# findInfoPersee
+JSTOR_title = (fitz.open(), ({}, 1))
+JSTOR_no_title = ({}, ({}, 2))
+f1 = ""
+f2 = ""
+
+# findInfoJSTOR
+def set_up_test(tmp_path):
+    f1 = tmp_path / "mydir/myfile.pdf"
+    f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
+    f1.touch()  # create a file "myfile" in "mydir"
+    f2 = tmp_path / "mydir/myfile2.pdf"
+    f2.parent.mkdir()
+    f2.touch()
+    f2.write_text("ISBN \n Author(s):")
+    global JSTOR_title
+    global JSTOR_no_title
+    JSTOR_no_title = (fitz.open("mydir/myfile")[0], ({"title": "myfile"}, 2))
+    JSTOR_title = (fitz.open("mydir/myfile2")[0], ({"title": "myfile"}, 2))
+
+
+def test_findInfoJSTOR(tmp_path):
+    f1 = tmp_path / "mydir/myfile.pdf"
+    f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
+    f1.touch()  # create a file "myfile" in "mydir"
+    # JSTOR_no_title = ((fitz.open('mydir/myfile')[0], ({'title': 'myfile'}, 2)))
+    doc = fitz.open("mydir/myfile.pdf")
+    assert findInfoJSTOR(doc[0], "mydir/myfile.pdf") == ({"title": "myfile"}, 2)
 
 
 # Mock tools:

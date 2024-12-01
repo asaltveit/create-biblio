@@ -214,7 +214,7 @@ def main():
 
 
 main()
-# file_path = "../test/Pellegrin 1957 Les manuscrits de Loup de Ferrières.pdf"
+# file_path = "../test/Itineraries/Hulbert 1923 Some Medieval Advertisements of Rome.pdf"
 # doc = fitz.open(file_path)
 # page = doc[0]
 # print("page: ", page)
