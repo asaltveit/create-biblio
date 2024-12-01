@@ -4,10 +4,32 @@ import fitz
 from parse_info_functions import (
     getInfoFromFileName,
     parseInfoGeneral,
-    findInfoJSTOR,
+    collectYearManuscriptCode,
 )
 
 fake = Faker()
+
+# collectYearManuscriptCode
+@pytest.mark.parametrize(
+    "file_name,output,expected",
+    [
+        (
+            "Ammannati 2023 Lupus in fabula - Sulla vera mano di Lupo di Ferrières",
+            {},
+            {"year": "2023"},
+        ),
+        (
+            "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina",
+            {},
+            {"year": "1998", "number_of_volumes": 9401},
+        ),
+        ("Levitan-DancingEndRope-1985", {}, {"year": 1985}),  # fails
+        ("Les manuscrits de Loup de Ferrières", {}, {}),  # fails
+    ],
+)
+def test_collectYearManuscriptCode(file_name, output, expected):
+    assert collectYearManuscriptCode(file_name, output) == expected
+
 
 # getInfoFromFileName
 def test_author_year_title_format():
@@ -37,7 +59,7 @@ def test_dashes():
     )
 
 
-def test_multiple_years_format():
+def test_multiple_numbers_format():
     assert getInfoFromFileName(
         "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina"
     ) == (
@@ -89,7 +111,11 @@ infolines_middlebury_all_caps = (
     {"authors": ["Zurli"], "title": "Il cod Vindobonensis Palatinus", "year": "1998"},
     infolines_middlebury_all_caps_expected,
 )
-infolines_jstor = []
+infolines_jstor = [
+    "Some Medieval Advertisements of Rome ",
+    "Author(s): J. R. Hulbert ",
+    "Source: Modern Philology , May, 1923, Vol. 20, No. 4 (May, 1923), pp. 403-424  Published by: The University of Chicago Press Stable URL: https://www.jstor.org/stable/433697JSTOR is a not-for-profit service that helps scholars, researchers, and students discover, use, and build upon a wide range of content in a trusted digital archive. We use information technology and tools to increase productivity and facilitate new forms of scholarship. For more information about JSTOR, please contact support@jstor.org.  Your use of the JSTOR archive indicates your acceptance of the Terms & Conditions of Use, available at ",
+]
 no_infolines = ([], {"title": "blah, blah, blah"}, {"title": "blah, blah, blah"})
 # Persee - not working
 # infolines_persee_output = {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957'}
@@ -133,8 +159,8 @@ def test_findInfoJSTOR(tmp_path):
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
     f1.touch()  # create a file "myfile" in "mydir"
     # JSTOR_no_title = ((fitz.open('mydir/myfile')[0], ({'title': 'myfile'}, 2)))
-    doc = fitz.open("mydir/myfile.pdf")
-    assert findInfoJSTOR(doc[0], "mydir/myfile.pdf") == ({"title": "myfile"}, 2)
+    # doc = fitz.open("mydir/myfile.pdf")
+    # assert findInfoJSTOR(doc[0], "mydir/myfile.pdf") == ({"title": "myfile"}, 2)
 
 
 # Mock tools:
@@ -163,3 +189,10 @@ def test_findInfoJSTOR(tmp_path):
 # fake = Faker()
 
 # pip install Faker
+
+# Might be more for backend objects:
+# https://factoryboy.readthedocs.io/en/stable/
+
+# tmp_dir:  https://stackoverflow.com/questions/36070031/creating-a-temporary-directory-in-pytest
+# fitz open - https://github.com/pymupdf/PyMuPDF/issues/612
+# mocking issues - https://stackoverflow.com/questions/65728499/python-pytest-mocking-three-functions

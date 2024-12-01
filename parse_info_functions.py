@@ -2,6 +2,28 @@ import fitz  # PyMuPDF / fitz # For reading PDF
 import re
 import os
 
+
+def collectYearManuscriptCode(file_name, output):
+    space_sections = file_name.split(" ")
+    numbers4digits = re.findall(r"[0-9]{4}", file_name)
+    numbersAllDigits = re.findall(r"[0-9]{3,9}", file_name)
+    posYear = int(numbers4digits[0])
+    if (
+        numbers4digits
+        and len(numbers4digits) >= 1
+        and posYear > 0
+        and posYear < 2050
+        and space_sections[1] == numbers4digits[0]
+    ):
+        output["year"] = numbers4digits[0]
+        additionalNums = [x for x in numbersAllDigits if x != numbers4digits[0]]
+        if additionalNums:
+            output["number_of_volumes"] = additionalNums[0]
+    else:
+        output["number_of_volumes"] = numbersAllDigits[0]
+    return output
+
+
 # Has tests
 def getInfoFromFileName(file_path):
     print("Update: Collecting info from file name")
@@ -9,7 +31,10 @@ def getInfoFromFileName(file_path):
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
     file_name = file_name.split(".")[0]
-    # Split on year
+
+    # Numbers
+    output = collectYearManuscriptCode(file_name, output)
+
     textSections = re.split(r"(?<!\d)\d{4}(?!\d)", file_name)
     if len(textSections) == 2 and textSections[1]:
         author, title = textSections
@@ -21,6 +46,7 @@ def getInfoFromFileName(file_path):
     elif len(textSections) == 2:
         title = textSections[0]
         output["title"] = title.strip()
+        print("Update: Article title found")
     elif len(textSections) > 2:
         author = textSections[0]
         title = textSections[1]
@@ -32,11 +58,6 @@ def getInfoFromFileName(file_path):
         # Strip is unlikely to do anything here, just to be safe?
         output["title"] = file_name.strip()
         print("Update: Article title found")
-
-    year = re.findall(r"[0-9]{4}", file_name)
-    if len(year) >= 1:
-        output["year"] = year[0]
-        print("Update: Year published found")
 
     return output, 2
 

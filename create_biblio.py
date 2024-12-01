@@ -213,14 +213,14 @@ def main():
     print("Updated: Finished")
 
 
-main()
-# file_path = "../test/Itineraries/Hulbert 1923 Some Medieval Advertisements of Rome.pdf"
-# doc = fitz.open(file_path)
-# page = doc[0]
-# print("page: ", page)
-# i, _ = getInfoFromFileName(file_path)
-# print("file-name-info: ", i)
-# info = getInfoGeneral(page)
-# print("infoLines: ", info)
-# output = parseInfoGeneral(info, i)
-# print("output: ", output)
+# main()
+file_path = "../test/Itineraries/Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina.pdf"
+doc = fitz.open(file_path)
+page = doc[0]
+print("page: ", page)
+i, _ = getInfoFromFileName(file_path)
+print("file-name-info: ", i)
+info = getInfoGeneral(page)
+print("infoLines: ", info)
+output = parseInfoGeneral(info, i)
+print("output: ", output)
