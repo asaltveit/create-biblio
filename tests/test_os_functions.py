@@ -65,7 +65,7 @@ def test_checkInputPathExists_false(tmp_path, capsys):
     assert "Input path does not exist" in captured
 
 
-# How to catch an exception?
+# How to create an exception?
 def test_checkInputPathExists_except(tmp_path, capsys):
     pass
 

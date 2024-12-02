@@ -25,7 +25,13 @@ def checkInputPathExists(file: str):
         else:
             print("Error: Input path does not exist")
             return False
-    except Exception as e:
+    except PermissionError:
+        print("Permission error: Unable to access the file.")
+        return False
+    except OSError as e:
+        print("Error: Cannot access input folder: " + e)
+        return False
+    except ValueError as e:
         print("Error: Cannot access input folder: " + e)
         return False
 
