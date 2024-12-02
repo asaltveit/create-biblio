@@ -77,7 +77,9 @@ def findInfo(pdf_path):
         else:
             numPersee += addToPerseeCount
     else:
-        print("Update: Didn't identify a known format (from JSTOR or Persee)")
+        print(
+            "Update: Didn't identify a known format (from JSTOR or Persee) - will use a general format"
+        )
         output, _ = getInfoFromFileName(pdf_path)
         numFileName += 1
         info = getInfoGeneral(page)

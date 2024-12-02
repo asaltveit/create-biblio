@@ -1,7 +1,7 @@
 import os
 
 
-def searchFolder(search_path):
+def searchFolder(search_path: str):
     numPaths = 0
     print("Update: Searching for PDFs")
     paths = []
@@ -16,7 +16,7 @@ def searchFolder(search_path):
     return paths
 
 
-def checkInputPathExists(file):
+def checkInputPathExists(file: str):
     try:
         path = os.path.exists(file)
         if path:
@@ -30,17 +30,17 @@ def checkInputPathExists(file):
         return False
 
 
-def checkOutputFileType(file, inputPath):
+def checkOutputFileType(file: str, inputPath: str):
     if not file:
-        file = getLastInputPathParameter(inputPath)
-    if not file.endswith(".ris"):
+        return getLastInputPathParameter(inputPath)
+    elif not file.endswith(".ris"):
         return file.split(".")[0] + ".ris"
     else:
         return file
 
 
 # TODO Update readme to reflect where output file will go
-def getLastInputPathParameter(inputPath):
+def getLastInputPathParameter(inputPath: str):
     folderName = os.path.basename(os.path.normpath(inputPath))
     fileName = folderName + ".ris"
     return os.path.join(inputPath, fileName)
