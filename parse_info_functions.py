@@ -1,6 +1,7 @@
 import fitz  # PyMuPDF / fitz # For reading PDF
 import re
 import os
+from constants import END_KEYWORDS, KEYWORDS
 
 
 def collectYearManuscriptCode(file_name, output):
@@ -140,6 +141,7 @@ def parseInfoGeneral(infoLines, output):
     return output
 
 
+# Fitz used here
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Reminder: Any field may be missing
@@ -235,37 +237,7 @@ def findInfoJSTOR(page, pdf_path):
     else:
         output = {"type_of_reference": "JOUR"}
 
-    # Get list of lines of text, with fonts and line size
-    lis = []
-    for i in page.get_text("dict")["blocks"]:
-        try:
-            lines = i["lines"]
-            for line in range(len(lines)):
-                for k in range(len(lines[line]["spans"])):
-                    li = list(
-                        (
-                            lines[line]["spans"][k]["text"],
-                            i["lines"][line]["spans"][k]["font"],
-                            round(i["lines"][line]["spans"][k]["size"]),
-                        )
-                    )
-                    lis.append(li)
-        except KeyError:
-            pass
-    # Get list of only relevant lines of text
-    keywords = ["Author(s):", "Source:", "Published"]
-    j = 0
-    curStr = ""
-    infoLines = []
-    for i in range(len(lis)):
-        if j >= len(keywords):
-            break
-        if lis[i][0].startswith(keywords[j]):
-            infoLines.append(curStr)
-            curStr = lis[i][0]
-            j += 1
-        else:
-            curStr += lis[i][0]
+    infoLines = getInfoGeneral(page)
 
     if not infoLines:
         print("Update: Didn't find title, searching file name")
@@ -299,3 +271,39 @@ def findInfoJSTOR(page, pdf_path):
                     output["end_page"] = endPage
 
     return output, 1
+
+
+# Fitz used here
+def getInfoGeneral(page):
+    global numOther
+    numOther += 1
+    # Get list of lines of text, with fonts and line size
+    lis = []
+    for i in page.get_text("dict")["blocks"]:
+        try:
+            lines = i["lines"]
+            for line in range(len(lines)):
+                for k in range(len(lines[line]["spans"])):
+                    li = list(
+                        (
+                            lines[line]["spans"][k]["text"],
+                            i["lines"][line]["spans"][k]["font"],
+                            round(i["lines"][line]["spans"][k]["size"]),
+                        )
+                    )
+                    lis.append(li)
+        except KeyError:
+            pass
+    # Get list of only relevant lines of text
+    curStr = ""
+    infoLines = []
+    for i in range(len(lis)):
+        if lis[i][0].startswith(tuple(KEYWORDS)):
+            infoLines.append(curStr)
+            curStr = lis[i][0]
+        elif lis[i][0].startswith(tuple(END_KEYWORDS)):
+            infoLines.append(curStr)
+            curStr = ""
+        else:
+            curStr += lis[i][0]
+    return infoLines
