@@ -25,8 +25,8 @@ fake = Faker()
             {"year": "1998", "number_of_volumes": "9401"},
             2,
         ),
-        ("Levitan-DancingEndRope-1985", {}, {"year": "1985"}, 1),  # fails
-        ("Les manuscrits de Loup de Ferrières", {}, {}, 0),  # fails
+        ("Levitan-DancingEndRope-1985", {}, {"year": "1985"}, 1),
+        ("Les manuscrits de Loup de Ferrières", {}, {}, 0),
     ],
 )
 def test_collectYearManuscriptCode(file_name, output, expected, numPrints, capsys):
@@ -66,7 +66,7 @@ def test_dashes():
     )
 
 
-# SHhuld the 2 below just be tested by the direct function?
+# Should the 2 below just be tested by the direct function?
 def test_multiple_numbers_format():
     assert getInfoFromFileName(
         "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina"
