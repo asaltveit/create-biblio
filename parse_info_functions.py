@@ -4,23 +4,26 @@ import os
 
 
 def collectYearManuscriptCode(file_name, output):
-    space_sections = file_name.split(" ")
     numbers4digits = re.findall(r"[0-9]{4}", file_name)
     numbersAllDigits = re.findall(r"[0-9]{3,9}", file_name)
-    posYear = int(numbers4digits[0])
-    if (
-        numbers4digits
-        and len(numbers4digits) >= 1
-        and posYear > 0
-        and posYear < 2050
-        and space_sections[1] == numbers4digits[0]
-    ):
-        output["year"] = numbers4digits[0]
-        additionalNums = [x for x in numbersAllDigits if x != numbers4digits[0]]
-        if additionalNums:
-            output["number_of_volumes"] = additionalNums[0]
-    else:
+    secondItem = True
+
+    if numbers4digits:
+        # Do I need this check?
+        if " " in file_name:
+            space_sections = file_name.split(" ")
+            secondItem = space_sections[1] == numbers4digits[0]
+        intYear = int(numbers4digits[0])
+        if len(numbers4digits) >= 1 and intYear > 0 and intYear < 2050 and secondItem:
+            output["year"] = numbers4digits[0]
+            print("Update: Year found: " + numbers4digits[0])
+            additionalNums = [x for x in numbersAllDigits if x != numbers4digits[0]]
+            if additionalNums:
+                output["number_of_volumes"] = additionalNums[0]
+                print("Update: Manuscript code found")
+    elif numbersAllDigits:
         output["number_of_volumes"] = numbersAllDigits[0]
+        print("Update: Manuscript code found")
     return output
 
 

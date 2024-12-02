@@ -11,24 +11,31 @@ fake = Faker()
 
 # collectYearManuscriptCode
 @pytest.mark.parametrize(
-    "file_name,output,expected",
+    "file_name,output,expected,numPrints",
     [
         (
             "Ammannati 2023 Lupus in fabula - Sulla vera mano di Lupo di Ferrières",
             {},
             {"year": "2023"},
+            1,
         ),
         (
             "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina",
             {},
-            {"year": "1998", "number_of_volumes": 9401},
+            {"year": "1998", "number_of_volumes": "9401"},
+            2,
         ),
-        ("Levitan-DancingEndRope-1985", {}, {"year": 1985}),  # fails
-        ("Les manuscrits de Loup de Ferrières", {}, {}),  # fails
+        ("Levitan-DancingEndRope-1985", {}, {"year": "1985"}, 1),  # fails
+        ("Les manuscrits de Loup de Ferrières", {}, {}, 0),  # fails
     ],
 )
-def test_collectYearManuscriptCode(file_name, output, expected):
-    assert collectYearManuscriptCode(file_name, output) == expected
+def test_collectYearManuscriptCode(file_name, output, expected, numPrints, capsys):
+    result = collectYearManuscriptCode(file_name, output)
+    captured = capsys.readouterr().out
+    assert result == expected
+    # Splitting on the 'U' adds an extra empty item to the list for the first occurence
+    # captured = ['Update: Year foundUpdate: Manuscript code found']
+    assert len(captured.split("U")[1:]) == numPrints
 
 
 # getInfoFromFileName
@@ -59,6 +66,7 @@ def test_dashes():
     )
 
 
+# SHhuld the 2 below just be tested by the direct function?
 def test_multiple_numbers_format():
     assert getInfoFromFileName(
         "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina"
@@ -67,6 +75,7 @@ def test_multiple_numbers_format():
             "title": "Il cod Vindobonensis Palatinus",
             "authors": ["Zurli"],
             "year": "1998",
+            "number_of_volumes": "9401",
         },
         2,
     )
