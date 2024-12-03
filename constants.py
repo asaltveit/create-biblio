@@ -21,6 +21,7 @@ KEYWORDS = [
     "Month/Year:",
     "Year:",
     "YEAR:",
+    "Year Published:",
     "Pages:",
     "pp.",
     "PAGES:",

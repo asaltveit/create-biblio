@@ -173,6 +173,33 @@ def test_findInfoJSTOR(tmp_path):
     # assert findInfoJSTOR(doc[0], "mydir/myfile.pdf") == ({"title": "myfile"}, 2)
 
 
+# getInfoGeneral
+def set_up_test_directory(tmp_path):
+    # Typical top-level PDF
+    pdf1 = tmp_path / "mydir/myfile.pdf"
+    pdf1.parent.mkdir()
+    pdf1.touch()
+    pdf1.write_text("Title: test title\nAuthor: Test Author\nYear: 1985\nIssue: 20")
+    # Top-level PDF with dashes
+    pdf1 = tmp_path / "mydir/my-file-2.pdf"
+    pdf1.touch()
+    # Subfolder PDF starting with a dash
+    pdf3 = tmp_path / "mydir/innerFolder/-testFile3.pdf"
+    pdf3.parent.mkdir()
+    pdf3.touch()
+    # Subfolder not a pdf
+    docx1 = tmp_path / "mydir/innerFolder/testFile4.docx"
+    docx1.touch()
+
+
+# Some sort of error open the file
+def test_getInfoGeneral(tmp_path):
+    set_up_test_directory(tmp_path)
+    # doc = fitz.open(tmp_path/"mydir/myfile.pdf")
+    # page = doc[0]
+    # assert getInfoGeneral(page)
+
+
 # Mock tools:
 # with mock.patch('os.walk') as mockwalk:
 # mockwalk.return_value = [
