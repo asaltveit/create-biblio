@@ -4,8 +4,6 @@ import argparse  # To collect arguments from command line # using argparse-1.4.0
 
 from parse_info_functions import (
     getInfoFromFileName,
-    getInfoGeneral,
-    parseInfoGeneral,
     findInfoPersee,
     findInfoJSTOR,
 )
@@ -53,6 +51,7 @@ def findInfo(pdf_path):
     global numFileName
     global numJSTOR
     global numPersee
+    global numOther
 
     # page.search_for returns a list of location rectangles
 
@@ -65,15 +64,19 @@ def findInfo(pdf_path):
     # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
 
     if sourceRec:
+        print("Update: Using JSTOR format")
         output, addToJSTORCount = findInfoJSTOR(page, pdf_path)
         if addToJSTORCount == 2:
             numFileName += 1
+            numOther += 1
         else:
             numJSTOR += addToJSTORCount
     elif citeThisDocRec:
+        print("Update: Using Persee format")
         output, addToPerseeCount = findInfoPersee(page, citeThisDocRec[0], pdf_path)
         if addToPerseeCount == 2:
             numFileName += 1
+            numOther += 1
         else:
             numPersee += addToPerseeCount
     else:
@@ -82,8 +85,7 @@ def findInfo(pdf_path):
         )
         output, _ = getInfoFromFileName(pdf_path)
         numFileName += 1
-        info = getInfoGeneral(page)
-        output = parseInfoGeneral(info, output)
+        numOther += 1
 
     risEntries.append(output)
 
@@ -130,7 +132,7 @@ def main():
     print("Update: There were ", str(numJSTOR), " PDFs from JSTOR")
     print("Update: There were ", str(numPersee), " PDFs from Persee")
     print("Update: There were ", str(numOther), " PDFs with unknown format")
-    print("Update: Searched file names for info for ", str(numOther), " PDFs")
+    print("Update: Searched file names for info for ", str(numFileName), " PDFs")
 
     if risEntries:
         createBiblio(outputFile)

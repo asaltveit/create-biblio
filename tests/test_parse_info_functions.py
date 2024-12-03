@@ -183,7 +183,6 @@ def test_findInfoJSTOR(tmp_path):
     i = 0
     try:
         for file in fs:
-            print("file: ", file[0])
             doc = fitz.open(file[0])
             assert findInfoJSTOR(doc[0], file[1]) == file[2]
             i += 1

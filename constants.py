@@ -7,6 +7,7 @@ END_KEYWORDS = [
     "MONTH:",
     "USER JOURNAL TITLE",  # ?
     "OCLC #:",
+    "URL",
 ]
 KEYWORDS = [
     "Author(s):",

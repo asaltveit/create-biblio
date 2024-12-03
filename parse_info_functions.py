@@ -3,6 +3,13 @@ import re
 import os
 from constants import END_KEYWORDS, KEYWORDS
 
+# Other formats:
+# Taylor and Francis = https://www.tandfonline.com/doi/full/10.1080/02549948.2016.1170348?scroll=top&needAccess=true
+# Brill = https://brill.com/view/journals/jwl/1/2/article-p143_2.xml?rskey=LBePrJ&result=2&ebody=pdf-117260
+
+# TODO Need a format specific to Brill
+# TODO Likely need a format specific to Taylor and Francis
+
 
 def collectYearManuscriptCode(file_name, output):
     numbers4digits = re.findall(r"[0-9]{4}", file_name)
@@ -29,9 +36,9 @@ def collectYearManuscriptCode(file_name, output):
 
 
 # Has tests
-def getInfoFromFileName(file_path):
+def getInfoFromFileName(file_path, output={}):
     print("Update: Collecting info from file name")
-    output = {}
+    # output = {}
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
     file_name = file_name.split(".")[0]
@@ -63,7 +70,15 @@ def getInfoFromFileName(file_path):
         output["title"] = file_name.strip()
         print("Update: Article title found")
 
-    return output, 2
+    return generalInfoCollector(file_path, output), 2
+
+
+def generalInfoCollector(file_path, output):
+    doc = fitz.open(file_path)
+    page = doc[0]
+    info = getInfoGeneral(page)
+    output = parseInfoGeneral(info, output)
+    return output
 
 
 def parseInfoGeneral(infoLines, output):
@@ -115,7 +130,12 @@ def parseInfoGeneral(infoLines, output):
                 ):
                     output["journal_name"] = noLabelLine
                 if line.startswith("Published By:") or line.startswith("Published by:"):
-                    output["publisher"] = noLabelLine
+                    if "Stable" in noLabelLine:
+                        output["publisher"] = noLabelLine.split(" Stable")[0].strip()
+                    elif "URL" in noLabelLine:
+                        output["publisher"] = noLabelLine.split(" URL")[0].strip()
+                    else:
+                        output["publisher"] = line.strip()
                 if line.startswith("Year:") or line.startswith("YEAR:"):
                     output["year"] = noLabelLine
                 elif line.startswith("Month/Year:"):
@@ -229,9 +249,6 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, pdf_path):
-    # Keeping counts of types, just in case
-    global numJSTOR
-
     # Reminder: Any field may be missing
 
     ISBN = page.search_for("ISBN")
@@ -242,12 +259,11 @@ def findInfoJSTOR(page, pdf_path):
         output = {"type_of_reference": "JOUR"}
 
     infoLines = getInfoGeneral(page)
-
     if not infoLines:
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
         # Returned number will come from getInfoFromFileName
-        return getInfoFromFileName(pdf_path)
+        return getInfoFromFileName(pdf_path, output)
     else:
         print("Update: PDF is from JSTOR")
 
@@ -257,7 +273,17 @@ def findInfoJSTOR(page, pdf_path):
             authors = line[10:].split(", ")
             output["authors"] = [author.strip(" ") for author in authors]
         if line.startswith("Published by:"):
-            output["publisher"] = line.replace("Published by: ", "", 1).strip()
+            if "Stable" in line:
+                output["publisher"] = (
+                    line.replace("Published by: ", "", 1).split(" Stable")[0].strip()
+                )
+            elif "URL" in line:
+                output["publisher"] = (
+                    line.replace("Published by: ", "", 1).split(" URL")[0].strip()
+                )
+            else:
+                output["publisher"] = line.replace("Published by: ", "", 1).strip()
+            print("output: ", output)
         if line.startswith("ISSN:"):
             output["issn"] = line.replace("ISSN: ", "", 1).strip()
         if line.startswith("Source: "):
@@ -283,8 +309,6 @@ def findInfoJSTOR(page, pdf_path):
 
 # Fitz used here
 def getInfoGeneral(page):
-    global numOther
-    numOther += 1
     # Get list of lines of text, with fonts and line size
     lis = []
     for i in page.get_text("dict")["blocks"]:
