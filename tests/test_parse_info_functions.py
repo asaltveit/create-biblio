@@ -1,10 +1,12 @@
 import pytest
 from faker import Faker
 import fitz
+import pathlib
 from parse_info_functions import (
     getInfoFromFileName,
     parseInfoGeneral,
     collectYearManuscriptCode,
+    findInfoJSTOR,
 )
 
 fake = Faker()
@@ -143,34 +145,63 @@ def test_parseInfoGeneral(inputLines, output, expected):
     assert parseInfoGeneral(inputLines, output) == expected
 
 
-# Below tests not working
-JSTOR_title = (fitz.open(), ({}, 1))
-JSTOR_no_title = ({}, ({}, 2))
-f1 = ""
-f2 = ""
-
+# WORKING:
 # findInfoJSTOR
-def set_up_test(tmp_path):
-    f1 = tmp_path / "mydir/myfile.pdf"
-    f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
-    f1.touch()  # create a file "myfile" in "mydir"
-    f2 = tmp_path / "mydir/myfile2.pdf"
-    f2.parent.mkdir()
-    f2.touch()
-    f2.write_text("ISBN \n Author(s):")
-    global JSTOR_title
-    global JSTOR_no_title
-    JSTOR_no_title = (fitz.open("mydir/myfile")[0], ({"title": "myfile"}, 2))
-    JSTOR_title = (fitz.open("mydir/myfile2")[0], ({"title": "myfile"}, 2))
-
-
 def test_findInfoJSTOR(tmp_path):
+    # TODO What needs to be tested here?
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
     f1.touch()  # create a file "myfile" in "mydir"
-    # JSTOR_no_title = ((fitz.open('mydir/myfile')[0], ({'title': 'myfile'}, 2)))
-    # doc = fitz.open("mydir/myfile.pdf")
-    # assert findInfoJSTOR(doc[0], "mydir/myfile.pdf") == ({"title": "myfile"}, 2)
+    f1.write_text(
+        "hgjfghfkfgkf  ISSN: 6547 \n Title: John \n\n Issue: 20 What you are looking at are just Windows explorer views to your files. That's no proof that those are valid"
+    )
+    # TODO A way to make some more realistic PDFs? mv/duplicate?
+    f2 = tmp_path / "mydir/myfile2.pdf"
+    f2.touch()
+    f2.write_text("jknjknjkn ISBN \n Author(s): John")
+    fs = [
+        [
+            f1,
+            "mydir/myfile.pdf",
+            (
+                {
+                    "title": "John",
+                    "issn": "6547",
+                    "issue": "20",
+                    "type_of_reference": "JOUR",
+                },
+                2,
+            ),
+        ],
+        [
+            f2,
+            "mydir/myfile2.pdf",
+            ({"title": "myfile", "type_of_reference": "BOOK", "authors": ["John"]}, 2),
+        ],
+    ]
+
+    i = 0
+    try:
+        for file in fs:
+            print("file: ", file[0])
+            doc = fitz.open(file[0])
+            assert findInfoJSTOR(doc[0], file[1]) == file[2]
+            i += 1
+        # pass
+    except Exception:
+        print(fitz.TOOLS.mupdf_warnings())
+        pth = pathlib.Path(fs[i][0])
+        buffer = pth.read_bytes()
+        print(buffer[:200])  # shows the first few hundred bytes of the file
+        # save the file to another place for later investigation
+        out = open(tmp_path / "test.pdf", "wb")
+        out.write(buffer)
+        out.close()
+
+
+# NOT WORKING:
+def set_up_test(tmp_path):
+    pass
 
 
 # getInfoGeneral
@@ -192,9 +223,10 @@ def set_up_test_directory(tmp_path):
     docx1.touch()
 
 
-# Some sort of error open the file
+# Some sort of error opening the file
 def test_getInfoGeneral(tmp_path):
     set_up_test_directory(tmp_path)
+
     # doc = fitz.open(tmp_path/"mydir/myfile.pdf")
     # page = doc[0]
     # assert getInfoGeneral(page)
