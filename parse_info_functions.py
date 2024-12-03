@@ -78,9 +78,12 @@ def parseInfoGeneral(infoLines, output):
                 if line.startswith("TYPE:") or line.startswith("Type:"):
                     output["type_of_reference"] = noLabelLine.split(" ")[0]
                 elif line.startswith("ISBN:"):
+                    # TODO rispy doesn't have ISBN field
                     output["type_of_reference"] = "BOOK"
                 else:
                     output["type_of_reference"] = "JOUR"
+                if line.startswith("ISSN:"):
+                    output["issn"] = noLabelLine
                 if (
                     line.startswith("Author(s):")
                     or line.startswith("Artide Author:")
@@ -104,14 +107,15 @@ def parseInfoGeneral(infoLines, output):
                 elif line.startswith("tome"):
                     output["volume"] = line.strip("tome ")
                 if (
-                    line.startswith("Published By:")
-                    or line.startswith("Journal Name:")
+                    line.startswith("Journal Name:")
                     or line.startswith("Journal Title:")
                     or line.startswith("JOURNAL TITLE:")
                     or line.startswith("Journal:")
                     or line.startswith("In:")
                 ):
                     output["journal_name"] = noLabelLine
+                if line.startswith("Published By:") or line.startswith("Published by:"):
+                    output["publisher"] = noLabelLine
                 if line.startswith("Year:") or line.startswith("YEAR:"):
                     output["year"] = noLabelLine
                 elif line.startswith("Month/Year:"):
@@ -252,6 +256,10 @@ def findInfoJSTOR(page, pdf_path):
         if line.startswith("Author(s):"):
             authors = line[10:].split(", ")
             output["authors"] = [author.strip(" ") for author in authors]
+        if line.startswith("Published by:"):
+            output["publisher"] = line.replace("Published by: ", "", 1).strip()
+        if line.startswith("ISSN:"):
+            output["issn"] = line.replace("ISSN: ", "", 1).strip()
         if line.startswith("Source: "):
             text = line.replace("Source: ", "", 1).strip().split(", ")
             output["journal_name"] = text[0].split("(")[0].strip()

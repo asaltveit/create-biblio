@@ -3,15 +3,17 @@ END_KEYWORDS = [
     "Fichier",
     "B o o k s ta c k s",
     "B o o k s t a c k s",
-    "ISSN:",
     "Month:",
     "MONTH:",
-    "USER JOURNAL TITLE",
+    "USER JOURNAL TITLE",  # ?
+    "OCLC #:",
 ]
 KEYWORDS = [
     "Author(s):",
     "Source:",
     "Published By:",
+    "Published by:",
+    "PUBLISHED BY:",
     "Volume:",
     "Vol.",
     "VOLUME:",
@@ -32,6 +34,7 @@ KEYWORDS = [
     "Article Author:",
     "Article Title:",
     "ISBN:",
+    "ISSN:",
     "TYPE:",
     "Type:",
     "Journal Name:",
