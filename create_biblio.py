@@ -6,6 +6,7 @@ from parse_info_functions import (
     getInfoFromFileName,
     findInfoPersee,
     findInfoJSTOR,
+    findInfoBrill,
 )
 from os_functions import (
     searchFolder,
@@ -32,6 +33,7 @@ numJSTOR = 0
 numPersee = 0
 numOther = 0
 numFileName = 0
+numBrill = 0
 
 
 def createBiblio(outputFile):
@@ -52,6 +54,7 @@ def findInfo(pdf_path):
     global numJSTOR
     global numPersee
     global numOther
+    global numBrill
 
     # page.search_for returns a list of location rectangles
 
@@ -59,11 +62,20 @@ def findInfo(pdf_path):
     sourceRec = page.search_for("Source")
     # Persee/French
     citeThisDocRec = page.search_for("Citer ce document")  # Persee is always French
-
+    # Brill
+    abstractRec = page.search_for("Abstract")
     # Converts to RIS format (seems easiest)
     # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
 
-    if sourceRec:
+    if abstractRec:
+        print("Update: Using Brill format")
+        output, addToBrillCount = findInfoBrill(page, abstractRec[0], pdf_path)
+        if addToBrillCount == 2:
+            numFileName += 1
+            numOther += 1
+        else:
+            numBrill += addToBrillCount
+    elif sourceRec:
         print("Update: Using JSTOR format")
         output, addToJSTORCount = findInfoJSTOR(page, pdf_path)
         if addToJSTORCount == 2:

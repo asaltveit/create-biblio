@@ -73,6 +73,7 @@ def getInfoFromFileName(file_path, output={}):
     return generalInfoCollector(file_path, output), 2
 
 
+# TODO Doesn't have tests
 def generalInfoCollector(file_path, output):
     doc = fitz.open(file_path)
     page = doc[0]
@@ -81,6 +82,7 @@ def generalInfoCollector(file_path, output):
     return output
 
 
+# Has tests
 def parseInfoGeneral(infoLines, output):
     # TODO This update can be more clear
     print("Update: Parsing info from a general format")
@@ -165,6 +167,7 @@ def parseInfoGeneral(infoLines, output):
     return output
 
 
+# TODO Doesn't have tests
 # Fitz used here
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
@@ -247,6 +250,35 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     return output, 1
 
 
+# TODO Doesn't have tests
+def findInfoBrill(page, endRec, pdf_path):
+    output = {}
+
+    # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
+    section = page.get_text(
+        "text",
+        clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, endRec.y0),
+    )
+    lines = section.split("\n")
+    journal, pages = re.split(r"\([0-9]{4}\)", lines[0])
+    start, end = re.findall(r"[0-9]{1,6}", pages.strip())
+    output["journal_name"] = journal.strip()
+    output["start_page"] = start.strip()
+    output["end_page"] = end.strip()
+    year = re.findall(r"[0-9]{4}", lines[0])[0]
+    output["year"] = year.strip()
+    if len(lines) < 3:
+        print("Update: Didn't find title, searching file name")
+        # Returned number will come from getInfoFromFileName
+        return getInfoFromFileName(pdf_path)
+    else:
+        print("Update: PDF is from Brill")
+    output["title"] = lines[2].strip()
+    output["authors"] = [x.strip() for x in lines[3].split(",")]
+    return output, 1
+
+
+# Has tests
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, pdf_path):
     # Reminder: Any field may be missing
