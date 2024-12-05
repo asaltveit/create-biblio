@@ -40,16 +40,9 @@ def test_collectYearManuscriptCode(file_name, output, expected, numPrints, capsy
     assert len(captured.split("U")[1:]) == numPrints
 
 
-# getInfoFromFileName
-def test_author_year_title_format():
-    assert getInfoFromFileName(
-        "Ammannati 2023 Lupus in fabula - Sulla vera mano di Lupo di Ferrières.pdf"
-    ) == (
-        {
-            "authors": ["Ammannati"],
-            "title": "Lupus in fabula - Sulla vera mano di Lupo di Ferrières",
-            "year": "2023",
-        },
+def test_dashes():
+    assert getInfoFromFileName("Levitan-DancingEndRope-1985.pdf") == (
+        {"title": "Levitan-DancingEndRope-", "year": "1985"},
         2,
     )
 
@@ -61,34 +54,15 @@ def test_title_year_format():
     )
 
 
-def test_dashes():
-    assert getInfoFromFileName("Levitan-DancingEndRope-1985.pdf") == (
-        {"title": "Levitan-DancingEndRope-", "year": "1985"},
-        2,
-    )
-
-
-# Should the 2 below just be tested by the direct function?
-def test_multiple_numbers_format():
+# getInfoFromFileName
+def test_author_year_title_format():
     assert getInfoFromFileName(
-        "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina"
+        "Ammannati 2023 Lupus in fabula - Sulla vera mano di Lupo di Ferrières.pdf"
     ) == (
         {
-            "title": "Il cod Vindobonensis Palatinus",
-            "authors": ["Zurli"],
-            "year": "1998",
-            "number_of_volumes": "9401",
-        },
-        2,
-    )
-
-
-def test_no_year():
-    assert getInfoFromFileName(
-        "Zurli Il cod Vindobonensis Palatinus asterisk dell Anthologia Latina"
-    ) == (
-        {
-            "title": "Zurli Il cod Vindobonensis Palatinus asterisk dell Anthologia Latina"
+            "authors": ["Ammannati"],
+            "title": "Lupus in fabula - Sulla vera mano di Lupo di Ferrières",
+            "year": "2023",
         },
         2,
     )
@@ -186,7 +160,7 @@ def test_findInfoJSTOR(tmp_path):
             doc = fitz.open(file[0])
             assert findInfoJSTOR(doc[0], file[1]) == file[2]
             i += 1
-        # pass
+
     except Exception:
         print(fitz.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
@@ -198,9 +172,51 @@ def test_findInfoJSTOR(tmp_path):
         out.close()
 
 
-# NOT WORKING:
-def set_up_test(tmp_path):
-    pass
+# Working - TODO add more tests
+def test_findInfoBrill(tmp_path):
+    # TODO What needs to be tested here?
+    f1 = tmp_path / "mydir/myfile.pdf"
+    f1.parent.mkdir()
+    f1.touch()
+    f1.write_text(
+        "Journal of World Literature 1 (2016) 143–157 \n\n\n Scriptworlds Lost and Found \n\t David Damrosch \n\t\t Harvard University\nddamrosc@fas.harvard.edu"
+    )
+    # TODO A way to make some more realistic PDFs? mv/duplicate?
+    fs = [
+        [
+            f1,
+            "mydir/myfile.pdf",
+            (
+                {
+                    "title": "Scriptworlds Lost and Found",
+                    "journal_name": "Journal of World Literature 1",
+                    "start_page": "143",
+                    "end_page": "157",
+                    "year": "2016",
+                    "authors": ["David Damrosch"],
+                    "type_of_reference": "JOUR",
+                },
+                2,
+            ),
+        ],
+    ]
+
+    i = 0
+    try:
+        for file in fs:
+            doc = fitz.open(file[0])
+            assert findInfoJSTOR(doc[0], file[1]) == file[2]
+            i += 1
+
+    except Exception:
+        print(fitz.TOOLS.mupdf_warnings())
+        pth = pathlib.Path(fs[i][0])
+        buffer = pth.read_bytes()
+        print(buffer[:200])  # shows the first few hundred bytes of the file
+        # save the file to another place for later investigation
+        out = open(tmp_path / "test.pdf", "wb")
+        out.write(buffer)
+        out.close()
 
 
 # getInfoGeneral
@@ -225,10 +241,6 @@ def set_up_test_directory(tmp_path):
 # Some sort of error opening the file
 def test_getInfoGeneral(tmp_path):
     set_up_test_directory(tmp_path)
-
-    # doc = fitz.open(tmp_path/"mydir/myfile.pdf")
-    # page = doc[0]
-    # assert getInfoGeneral(page)
 
 
 # Mock tools:

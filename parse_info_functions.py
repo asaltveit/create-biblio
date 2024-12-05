@@ -70,7 +70,7 @@ def getInfoFromFileName(file_path, output={}):
         output["title"] = file_name.strip()
         print("Update: Article title found")
 
-    return generalInfoCollector(file_path, output), 2
+    return output, 2
 
 
 # TODO Doesn't have tests
@@ -270,7 +270,8 @@ def findInfoBrill(page, endRec, pdf_path):
     if len(lines) < 3:
         print("Update: Didn't find title, searching file name")
         # Returned number will come from getInfoFromFileName
-        return getInfoFromFileName(pdf_path)
+        info = getInfoFromFileName(pdf_path)
+        return generalInfoCollector(pdf_path, info)
     else:
         print("Update: PDF is from Brill")
     output["title"] = lines[2].strip()
@@ -295,7 +296,8 @@ def findInfoJSTOR(page, pdf_path):
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
         # Returned number will come from getInfoFromFileName
-        return getInfoFromFileName(pdf_path, output)
+        info = getInfoFromFileName(pdf_path)
+        return generalInfoCollector(pdf_path, info)
     else:
         print("Update: PDF is from JSTOR")
 
