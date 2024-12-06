@@ -73,7 +73,7 @@ def getInfoFromFileName(file_path, output={}):
     return output, 2
 
 
-# TODO Doesn't have tests
+# TODO Doesn't have tests - Does it need tests if everything else is tested?
 def generalInfoCollector(file_path, output):
     doc = fitz.open(file_path)
     page = doc[0]

@@ -7,6 +7,8 @@ from parse_info_functions import (
     parseInfoGeneral,
     collectYearManuscriptCode,
     findInfoJSTOR,
+    findInfoPersee,
+    findInfoBrill,
 )
 
 fake = Faker()
@@ -108,6 +110,60 @@ no_infolines = ([], {"title": "blah, blah, blah"}, {"title": "blah, blah, blah"}
 # infolines_persee_no_output = (["Bibliothèque de l'école deschartesLes manuscrits de Loup de Ferrières.A propos du ms. Orléans 162 (139) corrigé de sa main.Elisabeth PellegrinCiter ce document / Cite this document :Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5-31;doi : https://doi.org/10.3406/bec.1957.449558", ''], {}, {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957', 'type_of_reference': 'JOUR'})
 
 
+def test_findInfoPersee(tmp_path):
+    f1 = tmp_path / "mydir/myfile.pdf"
+    f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
+    f1.touch()  # create a file "myfile" in "mydir"
+    f1.write_text(
+        """Bibliothèque de l'école des chartes
+Citer ce document / Cite this document :
+Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;
+doi : https://doi.org/10.3406/bec.1957.449558
+https://www.persee.fr/doc/bec_0373-6237_1957_num_115_1_449558
+Fichier pdf généré le 15/03/2022"""
+    )
+
+    fs = [
+        [
+            f1,
+            "mydir/myfile.pdf",
+            (
+                {
+                    "title": "Les manuscrits de Loup de Ferrières",
+                    "issn": "6547",
+                    "issue": "20",
+                    "year": "1957",
+                    "start_page": "5",
+                    "end_page": "31",
+                    "volume": "115",
+                    "journal_name": "Bibliothèque de l'école des chartes",
+                    "doi": "https://doi.org/10.3406/bec.1957.449558",
+                    "authors": ["Elisabeth Pellegrin"],
+                    "type_of_reference": "JOUR",
+                },
+                2,
+            ),
+        ],
+    ]
+    # i used in pathlib.Path(fs[i][0])
+    i = 0
+    try:
+        for file in fs:
+            doc = fitz.open(file[0])
+            assert findInfoPersee(doc[0], file[1]) == file[2]
+            i += 1
+
+    except Exception:
+        print(fitz.TOOLS.mupdf_warnings())
+        pth = pathlib.Path(fs[i][0])
+        buffer = pth.read_bytes()
+        print(buffer[:200])  # shows the first few hundred bytes of the file
+        # save the file to another place for later investigation
+        out = open(tmp_path / "persee-test.pdf", "wb")
+        out.write(buffer)
+        out.close()
+
+
 @pytest.mark.parametrize(
     "inputLines,output,expected",
     [
@@ -159,15 +215,14 @@ def test_findInfoJSTOR(tmp_path):
         for file in fs:
             doc = fitz.open(file[0])
             assert findInfoJSTOR(doc[0], file[1]) == file[2]
-            i += 1
-
+        i += 1
     except Exception:
         print(fitz.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
         # save the file to another place for later investigation
-        out = open(tmp_path / "test.pdf", "wb")
+        out = open(tmp_path / "JSTOR-test.pdf", "wb")
         out.write(buffer)
         out.close()
 
@@ -205,7 +260,7 @@ def test_findInfoBrill(tmp_path):
     try:
         for file in fs:
             doc = fitz.open(file[0])
-            assert findInfoJSTOR(doc[0], file[1]) == file[2]
+            assert findInfoBrill(doc[0], file[1]) == file[2]
             i += 1
 
     except Exception:
@@ -214,7 +269,7 @@ def test_findInfoBrill(tmp_path):
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
         # save the file to another place for later investigation
-        out = open(tmp_path / "test.pdf", "wb")
+        out = open(tmp_path / "brill-test.pdf", "wb")
         out.write(buffer)
         out.close()
 
