@@ -14,6 +14,8 @@ from parse_info_functions import (
 
 fake = Faker()
 
+# TODO Add capsys and assert on prints
+
 # collectYearManuscriptCode
 @pytest.mark.parametrize(
     "file_name,output,expected,numPrints",

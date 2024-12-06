@@ -1,5 +1,4 @@
 import fitz  # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
-import rispy  # To create ris file # using rispy-0.9.0
 import argparse  # To collect arguments from command line # using argparse-1.4.0
 
 from parse_info_functions import (
@@ -13,6 +12,8 @@ from os_functions import (
     checkOutputFileType,
     checkInputPathExists,
 )
+
+from other_functions import createBiblio
 
 # Added requirements.txt for easier setup
 # Added to Github
@@ -34,17 +35,6 @@ numPersee = 0
 numOther = 0
 numFileName = 0
 numBrill = 0
-
-
-def createBiblio(outputFile):
-    print("Update: Creating RIS file")
-    try:
-        with open(outputFile, "w") as ris_file:
-            rispy.dump(risEntries, ris_file)
-    except Exception as e:
-        print("Error: Writing to RIS file failed: ", e)
-    else:
-        print("Update: Successfully wrote to RIS file")
 
 
 def findInfo(pdf_path):
@@ -102,6 +92,7 @@ def findInfo(pdf_path):
     risEntries.append(output)
 
 
+# Does this need a test?
 def getCommandLineArguments():
     parser = argparse.ArgumentParser(description="Creates ris file from PDF")
     # Take input path from command line
@@ -147,7 +138,7 @@ def main():
     print("Update: Searched file names for info for ", str(numFileName), " PDFs")
 
     if risEntries:
-        createBiblio(outputFile)
+        createBiblio(outputFile, risEntries)
     else:
         print("Update: There are no biblio entries to write")
 

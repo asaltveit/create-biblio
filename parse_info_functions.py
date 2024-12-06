@@ -7,10 +7,9 @@ from constants import END_KEYWORDS, KEYWORDS
 # Taylor and Francis = https://www.tandfonline.com/doi/full/10.1080/02549948.2016.1170348?scroll=top&needAccess=true
 # Brill = https://brill.com/view/journals/jwl/1/2/article-p143_2.xml?rskey=LBePrJ&result=2&ebody=pdf-117260
 
-# TODO Need a format specific to Brill
 # TODO Likely need a format specific to Taylor and Francis
 
-
+# Has test
 def collectYearManuscriptCode(file_name, output):
     numbers4digits = re.findall(r"[0-9]{4}", file_name)
     numbersAllDigits = re.findall(r"[0-9]{3,9}", file_name)
@@ -167,7 +166,7 @@ def parseInfoGeneral(infoLines, output):
     return output
 
 
-# TODO Doesn't have tests
+# Has test
 # Fitz used here
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
@@ -250,7 +249,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     return output, 1
 
 
-# TODO Doesn't have tests
+# Has test
 def findInfoBrill(page, endRec, pdf_path):
     output = {}
 
@@ -341,6 +340,7 @@ def findInfoJSTOR(page, pdf_path):
     return output, 1
 
 
+# Has test
 # Fitz used here
 def getInfoGeneral(page):
     # Get list of lines of text, with fonts and line size

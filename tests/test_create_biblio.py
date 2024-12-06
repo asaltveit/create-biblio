@@ -1,3 +1,0 @@
-# Test:
-# getCommandLineArguments,
-# findInfo, createBiblio
