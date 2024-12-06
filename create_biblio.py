@@ -111,6 +111,7 @@ def getCommandLineArguments():
     return args.outputPath, args.inputPath
 
 
+# Does this function need a test?
 def main():
     outputFilePath, inputFolderPath = getCommandLineArguments()
 
