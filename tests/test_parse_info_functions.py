@@ -9,6 +9,7 @@ from parse_info_functions import (
     findInfoJSTOR,
     findInfoPersee,
     findInfoBrill,
+    getInfoGeneral,
 )
 
 fake = Faker()
@@ -274,28 +275,59 @@ def test_findInfoBrill(tmp_path):
         out.close()
 
 
+# TODO Make all these tests more robust
 # getInfoGeneral
 def set_up_test_directory(tmp_path):
     # Typical top-level PDF
     pdf1 = tmp_path / "mydir/myfile.pdf"
     pdf1.parent.mkdir()
     pdf1.touch()
-    pdf1.write_text("Title: test title\nAuthor: Test Author\nYear: 1985\nIssue: 20")
+    pdf1.write_text("Title: test title\nAuthor: Test Athor\nYear: 1985\nIssue: 20")
     # Top-level PDF with dashes
-    pdf1 = tmp_path / "mydir/my-file-2.pdf"
-    pdf1.touch()
-    # Subfolder PDF starting with a dash
-    pdf3 = tmp_path / "mydir/innerFolder/-testFile3.pdf"
-    pdf3.parent.mkdir()
-    pdf3.touch()
-    # Subfolder not a pdf
-    docx1 = tmp_path / "mydir/innerFolder/testFile4.docx"
-    docx1.touch()
+    pdf2 = tmp_path / "mydir/my-file-2.pdf"
+    pdf2.touch()
+    pdf2.write_text(
+        """Bibliothèque de l'école des chartes
+Citer ce document / Cite this document :
+Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;
+doi : https://doi.org/10.3406/bec.1957.449558
+https://www.persee.fr/doc/bec_0373-6237_1957_num_115_1_449558
+Fichier pdf généré le 15/03/2022"""
+    )
+
+    fs = [
+        [pdf1, ["Title: test title", "Author: Test Athor", "Year: 1985", "Issue: 20"]],
+        [
+            pdf2,
+            [
+                "Citer ce document / Cite this document :Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;",
+                "doi : https://doi.org/10.3406/bec.1957.449558",
+            ],
+        ],
+    ]
+    return fs
 
 
 # Some sort of error opening the file
 def test_getInfoGeneral(tmp_path):
-    set_up_test_directory(tmp_path)
+    fs = set_up_test_directory(tmp_path)
+
+    i = 0
+    try:
+        for file in fs:
+            doc = fitz.open(file[0])
+            assert getInfoGeneral(doc[0]) == file[1]
+            i += 1
+
+    except Exception:
+        print(fitz.TOOLS.mupdf_warnings())
+        pth = pathlib.Path(fs[i][0])
+        buffer = pth.read_bytes()
+        print(buffer[:200])  # shows the first few hundred bytes of the file
+        # save the file to another place for later investigation
+        out = open(tmp_path / "general-infolines--test.pdf", "wb")
+        out.write(buffer)
+        out.close()
 
 
 # Mock tools:

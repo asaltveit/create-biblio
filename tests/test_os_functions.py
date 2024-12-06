@@ -31,6 +31,9 @@ def test_searchFolder(tmp_path, capsys):
     captured = capsys.readouterr().out
     for i in range(len(result)):
         assert result[i].endswith(paths[i])
+        # Make sure files to be avoided are avoided
+        assert not result[i].endswith("-testFile3.pdf")
+        assert not result[i].endswith("testFile4.docx")
     assert len(captured.split("U")[1:]) == 2
     assert len(captured.split("E")[1:]) == 0
     assert "Update: Found 2 paths" in captured
