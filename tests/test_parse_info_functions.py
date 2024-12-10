@@ -1,6 +1,4 @@
 import pytest
-
-# from faker import Faker
 import fitz
 import pathlib
 from parse_info_functions import (
@@ -12,8 +10,6 @@ from parse_info_functions import (
     findInfoBrill,
     getInfoGeneral,
 )
-
-# fake = Faker()
 
 # TODO Add capsys and assert on prints
 
@@ -114,7 +110,7 @@ no_infolines = ([], {"title": "blah, blah, blah"}, {"title": "blah, blah, blah"}
 # infolines_persee_no_output = (["Bibliothèque de l'école deschartesLes manuscrits de Loup de Ferrières.A propos du ms. Orléans 162 (139) corrigé de sa main.Elisabeth PellegrinCiter ce document / Cite this document :Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5-31;doi : https://doi.org/10.3406/bec.1957.449558", ''], {}, {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957', 'type_of_reference': 'JOUR'})
 
 
-def test_findInfoPersee(tmp_path):
+def test_findInfoPersee(tmp_path, capsys):
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
     f1.touch()  # create a file "myfile" in "mydir"
@@ -156,7 +152,8 @@ Fichier pdf généré le 15/03/2022"""
             doc = fitz.open(file[0])
             assert findInfoPersee(doc[0], file[1]) == file[2]
             i += 1
-
+        captured = capsys.readouterr().out
+        assert "Update: PDF is from Persee" == captured
     except Exception:
         print(fitz.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
@@ -175,13 +172,14 @@ Fichier pdf généré le 15/03/2022"""
         infolines_middlebury_all_caps,
     ],
 )
-def test_parseInfoGeneral(inputLines, output, expected):
+def test_parseInfoGeneral(inputLines, output, expected, capsys):
     assert parseInfoGeneral(inputLines, output) == expected
+    captured = capsys.readouterr().out
+    assert "Update: Parsing info from a general format" == captured
 
 
-# WORKING:
-# findInfoJSTOR
-def test_findInfoJSTOR(tmp_path):
+# findInfoJSTOR - TODO test if title isn't found
+def test_findInfoJSTOR(tmp_path, capsys):
     # TODO What needs to be tested here?
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
@@ -219,7 +217,9 @@ def test_findInfoJSTOR(tmp_path):
         for file in fs:
             doc = fitz.open(file[0])
             assert findInfoJSTOR(doc[0], file[1]) == file[2]
-        i += 1
+            i += 1
+        captured = capsys.readouterr().out
+        assert "Update: PDF is from JSTOR" == captured
     except Exception:
         print(fitz.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
@@ -231,8 +231,8 @@ def test_findInfoJSTOR(tmp_path):
         out.close()
 
 
-# Working - TODO add more tests
-def test_findInfoBrill(tmp_path):
+# TODO test if title isn't found
+def test_findInfoBrill(tmp_path, capsys):
     # TODO What needs to be tested here?
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()
@@ -266,6 +266,8 @@ def test_findInfoBrill(tmp_path):
             doc = fitz.open(file[0])
             assert findInfoBrill(doc[0], file[1]) == file[2]
             i += 1
+        captured = capsys.readouterr().out
+        assert "Update: PDF is from Brill" == captured
 
     except Exception:
         print(fitz.TOOLS.mupdf_warnings())
@@ -279,7 +281,7 @@ def test_findInfoBrill(tmp_path):
 
 
 # TODO Make all these tests more robust
-# getInfoGeneral
+# getInfoGeneral - TODO test if title isn't found
 def set_up_test_directory(tmp_path):
     # Typical top-level PDF
     pdf1 = tmp_path / "mydir/myfile.pdf"
@@ -311,7 +313,7 @@ Fichier pdf généré le 15/03/2022"""
     return fs
 
 
-# Some sort of error opening the file
+# Doesn't have prints
 def test_getInfoGeneral(tmp_path):
     fs = set_up_test_directory(tmp_path)
 
