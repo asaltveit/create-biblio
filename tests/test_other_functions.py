@@ -23,8 +23,3 @@ def test_createBiblio(tmp_path, capsys, data):
     captured = capsys.readouterr().out
     assert "Update: Creating RIS file" in captured
     assert data[1] in captured
-
-
-# Can the inner functions be mocked?
-def test_findInfo(tmp_path):
-    pass

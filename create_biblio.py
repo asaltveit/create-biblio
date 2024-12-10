@@ -2,7 +2,7 @@ import fitz  # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
 import argparse  # To collect arguments from command line # using argparse-1.4.0
 
 from parse_info_functions import (
-    getInfoFromFileName,
+    generalInfoCollector,
     findInfoPersee,
     findInfoJSTOR,
     findInfoBrill,
@@ -15,16 +15,14 @@ from os_functions import (
 
 from other_functions import createBiblio
 
+# Searches given folder and all sub folders for PDFs
+# Collects citation info from JSTOR or Persee formats
+# Adds RIS foramt entries to a file
+
 # Added requirements.txt for easier setup
 # Added to Github
 # Added dev tools
 # Added README
-# TODO Add tests
-# TODO add files for grouped functions
-
-# Searches given folder and all sub folders for PDFs
-# Collects citation info from JSTOR or Persee formats
-# Adds RIS foramt entries to a file
 
 risEntries = []
 anomalies = []
@@ -36,9 +34,13 @@ numOther = 0
 numFileName = 0
 numBrill = 0
 
-
+# Has tests
 def findInfo(pdf_path):
-    doc = fitz.open(pdf_path)
+    try:
+        doc = fitz.open(pdf_path)
+    except Exception as e:
+        print("Exception opening file: ", e)
+        return
     page = doc[0]
     global numFileName
     global numJSTOR
@@ -54,6 +56,7 @@ def findInfo(pdf_path):
     citeThisDocRec = page.search_for("Citer ce document")  # Persee is always French
     # Brill
     abstractRec = page.search_for("Abstract")
+
     # Converts to RIS format (seems easiest)
     # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
 
@@ -85,7 +88,7 @@ def findInfo(pdf_path):
         print(
             "Update: Didn't identify a known format (from JSTOR or Persee) - will use a general format"
         )
-        output, _ = getInfoFromFileName(pdf_path)
+        output = generalInfoCollector(pdf_path, {})
         numFileName += 1
         numOther += 1
 
@@ -124,7 +127,7 @@ def main():
 
     paths = searchFolder(inputFolderPath)
     if not paths or len(paths) == 0:
-        print("Update: No PDFs found")
+        # print("Update: No PDFs found")
         print("Update: No output files created")
         print("Update: Finished")
         return
@@ -146,4 +149,5 @@ def main():
     print("Updated: Finished")
 
 
-main()
+if __name__ == "__main__":
+    main()

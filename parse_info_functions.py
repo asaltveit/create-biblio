@@ -316,7 +316,6 @@ def findInfoJSTOR(page, pdf_path):
                 )
             else:
                 output["publisher"] = line.replace("Published by: ", "", 1).strip()
-            print("output: ", output)
         if line.startswith("ISSN:"):
             output["issn"] = line.replace("ISSN: ", "", 1).strip()
         if line.startswith("Source: "):

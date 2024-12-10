@@ -1,5 +1,6 @@
 import pytest
-from faker import Faker
+
+# from faker import Faker
 import fitz
 import pathlib
 from parse_info_functions import (
@@ -12,7 +13,7 @@ from parse_info_functions import (
     getInfoGeneral,
 )
 
-fake = Faker()
+# fake = Faker()
 
 # TODO Add capsys and assert on prints
 

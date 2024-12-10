@@ -3,5 +3,7 @@ black
 pytest
 coverage
 pytest-cov
+pytest
+pytest-integration-mark
 pre-commit
 ruff
