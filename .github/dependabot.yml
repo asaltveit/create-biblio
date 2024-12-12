@@ -1,3 +1,4 @@
+# https://til.simonwillison.net/github/dependabot-python-setup
 version: 2
 updates:
 - package-ecosystem: pip
