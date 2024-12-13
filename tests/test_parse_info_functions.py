@@ -1,5 +1,5 @@
 import pytest
-import fitz
+import pymupdf
 import pathlib
 from parse_info_functions import (
     getInfoFromFileName,
@@ -149,13 +149,13 @@ Fichier pdf généré le 15/03/2022"""
     i = 0
     try:
         for file in fs:
-            doc = fitz.open(file[0])
+            doc = pymupdf.open(file[0])
             assert findInfoPersee(doc[0], file[1]) == file[2]
             i += 1
         captured = capsys.readouterr().out
         assert "Update: PDF is from Persee" == captured
     except Exception:
-        print(fitz.TOOLS.mupdf_warnings())
+        print(pymupdf.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
@@ -215,13 +215,13 @@ def test_findInfoJSTOR(tmp_path, capsys):
     i = 0
     try:
         for file in fs:
-            doc = fitz.open(file[0])
+            doc = pymupdf.open(file[0])
             assert findInfoJSTOR(doc[0], file[1]) == file[2]
             i += 1
         captured = capsys.readouterr().out
         assert "Update: PDF is from JSTOR" == captured
     except Exception:
-        print(fitz.TOOLS.mupdf_warnings())
+        print(pymupdf.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
@@ -263,14 +263,14 @@ def test_findInfoBrill(tmp_path, capsys):
     i = 0
     try:
         for file in fs:
-            doc = fitz.open(file[0])
+            doc = pymupdf.open(file[0])
             assert findInfoBrill(doc[0], file[1]) == file[2]
             i += 1
         captured = capsys.readouterr().out
         assert "Update: PDF is from Brill" == captured
 
     except Exception:
-        print(fitz.TOOLS.mupdf_warnings())
+        print(pymupdf.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
@@ -320,12 +320,12 @@ def test_getInfoGeneral(tmp_path):
     i = 0
     try:
         for file in fs:
-            doc = fitz.open(file[0])
+            doc = pymupdf.open(file[0])
             assert getInfoGeneral(doc[0]) == file[1]
             i += 1
 
     except Exception:
-        print(fitz.TOOLS.mupdf_warnings())
+        print(pymupdf.TOOLS.mupdf_warnings())
         pth = pathlib.Path(fs[i][0])
         buffer = pth.read_bytes()
         print(buffer[:200])  # shows the first few hundred bytes of the file
@@ -366,5 +366,5 @@ def test_getInfoGeneral(tmp_path):
 # https://factoryboy.readthedocs.io/en/stable/
 
 # tmp_dir:  https://stackoverflow.com/questions/36070031/creating-a-temporary-directory-in-pytest
-# fitz open - https://github.com/pymupdf/PyMuPDF/issues/612
+# pymupdf open - https://github.com/pymupdf/PyMuPDF/issues/612
 # mocking issues - https://stackoverflow.com/questions/65728499/python-pytest-mocking-three-functions

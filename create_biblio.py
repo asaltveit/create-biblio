@@ -1,5 +1,6 @@
-import fitz  # PyMuPDF / fitz # For reading PDF # using PyMuPDF-1.24.13
 import argparse  # To collect arguments from command line # using argparse-1.4.0
+import pymupdf
+
 
 from parse_info_functions import (
     generalInfoCollector,
@@ -37,7 +38,7 @@ numBrill = 0
 # Has tests
 def findInfo(pdf_path):
     try:
-        doc = fitz.open(pdf_path)
+        doc = pymupdf.open(pdf_path)
     except Exception as e:
         print("Exception opening file: ", e)
         return

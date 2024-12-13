@@ -1,4 +1,4 @@
-import fitz  # PyMuPDF / fitz # For reading PDF
+import pymupdf  # PyMuPDF / fitz # For reading PDF
 import re
 import os
 from constants import END_KEYWORDS, KEYWORDS
@@ -74,7 +74,7 @@ def getInfoFromFileName(file_path, output={}):
 
 # TODO Doesn't have tests - Does it need tests if everything else is tested?
 def generalInfoCollector(file_path, output):
-    doc = fitz.open(file_path)
+    doc = pymupdf.open(file_path)
     page = doc[0]
     info = getInfoGeneral(page)
     output = parseInfoGeneral(info, output)
@@ -167,7 +167,7 @@ def parseInfoGeneral(infoLines, output):
 
 
 # Has test
-# Fitz used here
+# pymupdf used here
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Reminder: Any field may be missing
@@ -191,7 +191,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
     # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
     section = page.get_text(
         "text",
-        clip=fitz.Rect(citeThisDocRec.x0, citeThisDocRec.y0, page.rect.x1, end),
+        clip=pymupdf.Rect(citeThisDocRec.x0, citeThisDocRec.y0, page.rect.x1, end),
     )
     # Remove the search string itself from the extracted text
     section = section.replace("Citer ce document / Cite this document :", "", 1).strip()
@@ -256,7 +256,7 @@ def findInfoBrill(page, endRec, pdf_path):
     # Extract text from the page, starting from the coordinates of "Source", stopping before "Published by"
     section = page.get_text(
         "text",
-        clip=fitz.Rect(page.rect.x0, page.rect.y0, page.rect.x1, endRec.y0),
+        clip=pymupdf.Rect(page.rect.x0, page.rect.y0, page.rect.x1, endRec.y0),
     )
     lines = section.split("\n")
     journal, pages = re.split(r"\([0-9]{4}\)", lines[0])
@@ -340,7 +340,7 @@ def findInfoJSTOR(page, pdf_path):
 
 
 # Has test
-# Fitz used here
+# pymupdf used here
 def getInfoGeneral(page):
     # Get list of lines of text, with fonts and line size
     lis = []
