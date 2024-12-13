@@ -37,7 +37,6 @@ def collectYearManuscriptCode(file_name, output):
 # Has tests
 def getInfoFromFileName(file_path, output={}):
     print("Update: Collecting info from file name")
-    # output = {}
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
     file_name = file_name.split(".")[0]
@@ -73,9 +72,9 @@ def getInfoFromFileName(file_path, output={}):
 
 
 # TODO Doesn't have tests - Does it need tests if everything else is tested?
-def generalInfoCollector(file_path, output):
-    doc = pymupdf.open(file_path)
-    page = doc[0]
+def generalInfoCollector(page, output):
+    # Get from file name is run before this and
+    # the output is fed here in the output argument
     info = getInfoGeneral(page)
     output = parseInfoGeneral(info, output)
     return output
@@ -221,7 +220,8 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
         # Returned number will come from getInfoFromFileName
-        return getInfoFromFileName(pdf_path)
+        info = getInfoFromFileName(pdf_path, output)
+        return getInfoFromFileName(pdf_path, info)
     else:
         print("Update: PDF is from Persee")
 
@@ -269,8 +269,8 @@ def findInfoBrill(page, endRec, pdf_path):
     if len(lines) < 3:
         print("Update: Didn't find title, searching file name")
         # Returned number will come from getInfoFromFileName
-        info = getInfoFromFileName(pdf_path)
-        return generalInfoCollector(pdf_path, info)
+        info = getInfoFromFileName(pdf_path, output)
+        return generalInfoCollector(page, info)
     else:
         print("Update: PDF is from Brill")
     output["title"] = lines[2].strip()
@@ -295,8 +295,8 @@ def findInfoJSTOR(page, pdf_path):
         print("Update: Didn't find title, searching file name")
         # TODO Should general info be parsed for this as well?
         # Returned number will come from getInfoFromFileName
-        info = getInfoFromFileName(pdf_path)
-        return generalInfoCollector(pdf_path, info)
+        info = getInfoFromFileName(pdf_path, output)
+        return generalInfoCollector(page, info)
     else:
         print("Update: PDF is from JSTOR")
 

@@ -4,6 +4,7 @@ import pymupdf
 
 from parse_info_functions import (
     generalInfoCollector,
+    getInfoFromFileName,
     findInfoPersee,
     findInfoJSTOR,
     findInfoBrill,
@@ -89,7 +90,8 @@ def findInfo(pdf_path):
         print(
             "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
         )
-        output = generalInfoCollector(pdf_path, {})
+        fileNameInfo = getInfoFromFileName(pdf_path)
+        output = generalInfoCollector(page, fileNameInfo)
         numFileName += 1
         numOther += 1
 
