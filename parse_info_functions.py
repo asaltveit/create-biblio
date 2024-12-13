@@ -34,6 +34,22 @@ def collectYearManuscriptCode(file_name, output):
     return output
 
 
+# 56-7 is pages 56 and 57, not pages 56 to 07
+# only change number of digits on end of startPage as the number of digits after -
+def collectPageNumbers(file_name, output):
+    pageSections = re.findall(r" pp [0-9]{1,8}-[0-9]{1,8}", file_name)
+    if pageSections:
+        startPage, endPage = pageSections[0].replace(" pp ", "", 1).split("-")
+        output["start_page"] = startPage
+        output["end_page"] = endPage
+        file_name_parts = re.split(r" pp [0-9]{1,8}-[0-9]{1,8}", file_name)
+        file_name = "".join(file_name_parts)
+        print("Update: Found page numbers")
+    else:
+        print("Warn: pp found in filename but unable to parse")
+    return output
+
+
 # Has tests
 # TODO Search for 'pp ' in file name to get page numbers
 # (2 pdfs with this format in dad's recent run)
@@ -42,6 +58,10 @@ def getInfoFromFileName(file_path, output={}):
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
     file_name = file_name.replace(".pdf", "", 1)
+
+    # Detect page numbers
+    if " pp " in file_name:
+        output = collectPageNumbers(file_name, output)
 
     # Numbers
     output = collectYearManuscriptCode(file_name, output)

@@ -5,6 +5,7 @@ from parse_info_functions import (
     getInfoFromFileName,
     parseInfoGeneral,
     collectYearManuscriptCode,
+    collectPageNumbers,
     findInfoJSTOR,
     findInfoPersee,
     findInfoBrill,
@@ -12,6 +13,37 @@ from parse_info_functions import (
 )
 
 # TODO Add capsys and assert on prints
+
+# collectPageNumbers
+@pytest.mark.parametrize(
+    "file_name,output,expectedOutput,expectedPrint",
+    [
+        (
+            "Zurli 1998 Il cod Vindobonensis Palatinus 9401 asterisk dell Anthologia Latina",
+            {},
+            {},
+            "Warn: pp found in filename but unable to parse",
+        ),
+        (
+            "De Rossi ICUR II pp 244-9 from Paris Lat 8071.pdf",
+            {},
+            {"start_page": "244", "end_page": "9"},
+            "Update: Found page numbers",
+        ),
+        (
+            "De Rossi ICUR II pp 56-7 from Paris Lat 8071.pdf",
+            {"authors": ["Blake"]},
+            {"authors": ["Blake"], "start_page": "56", "end_page": "7"},
+            "Update: Found page numbers",
+        ),
+    ],
+)
+def test_collectPageNumbers(file_name, output, expectedOutput, expectedPrint, capsys):
+    result = collectPageNumbers(file_name, output)
+    captured = capsys.readouterr().out
+    assert result == expectedOutput
+    assert captured.strip() == expectedPrint
+
 
 # collectYearManuscriptCode
 @pytest.mark.parametrize(
@@ -171,11 +203,11 @@ Fichier pdf généré le 15/03/2022"""
         no_infolines,
         infolines_middlebury_all_caps,
     ],
-)
+)  # What's wrong here?
 def test_parseInfoGeneral(inputLines, output, expected, capsys):
     assert parseInfoGeneral(inputLines, output) == expected
     captured = capsys.readouterr().out
-    assert "Update: Parsing info from a general format" == captured
+    assert "Update: Parsing info from a general format" == captured.strip()
 
 
 # findInfoJSTOR - TODO test if title isn't found
