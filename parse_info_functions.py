@@ -35,11 +35,13 @@ def collectYearManuscriptCode(file_name, output):
 
 
 # Has tests
+# TODO Search for 'pp ' in file name to get page numbers
+# (2 pdfs with this format in dad's recent run)
 def getInfoFromFileName(file_path, output={}):
     print("Update: Collecting info from file name")
     file_name = os.path.basename(os.path.normpath(file_path))
     # Remove .pdf
-    file_name = file_name.split(".")[0]
+    file_name = file_name.replace(".pdf", "", 1)
 
     # Numbers
     output = collectYearManuscriptCode(file_name, output)
