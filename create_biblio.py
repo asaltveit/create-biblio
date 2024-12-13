@@ -87,7 +87,7 @@ def findInfo(pdf_path):
             numPersee += addToPerseeCount
     else:
         print(
-            "Update: Didn't identify a known format (from JSTOR or Persee) - will use a general format"
+            "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
         )
         output = generalInfoCollector(pdf_path, {})
         numFileName += 1

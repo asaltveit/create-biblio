@@ -75,7 +75,7 @@ ISSN: 0017-0461
 OCLC #:
 Processed by RapidX: 11/12/2024 10:51:39 AM
 This material may be protected by copyright law (Title 17 U.S. Code)""",
-            "Update: Didn't identify a known format (from JSTOR or Persee) - will use a general format",
+            "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format",
         ),
     ],
 )
@@ -149,7 +149,7 @@ with_path_prints = [
     "Update: Finding info for - ",
     "Update: Finding info for - ",
     "Update: Using Persee format",
-    "Update: Didn't identify a known format (from JSTOR or Persee) - will use a general format",
+    "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format",
     "Update: Collecting info from file name",
     "Update: Author found",
     "Update: Article title found",
