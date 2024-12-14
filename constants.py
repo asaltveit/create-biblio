@@ -39,6 +39,7 @@ KEYWORDS = [
     "ISSN:",
     "TYPE:",
     "Type:",
+    "Print:",
     "Journal Name:",
     "Journal Title:",
     "JOURNAL TITLE:",

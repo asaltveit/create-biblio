@@ -119,6 +119,12 @@ def parseInfoGeneral(infoLines, output):
                 elif line.startswith("ISBN:"):
                     # TODO rispy doesn't have ISBN field
                     output["type_of_reference"] = "BOOK"
+                elif line.startswith("Print: Manuscript"):
+                    output["type_of_reference"] = "MANSCPT"
+                elif line.startswith("Print: Ancient Text"):
+                    output["type_of_reference"] = "ANCIENT"
+                elif line.startswith("Print: Classical Work"):
+                    output["type_of_reference"] = "CLSWK"
                 else:
                     output["type_of_reference"] = "JOUR"
                 if line.startswith("ISSN:"):
@@ -314,15 +320,23 @@ def findInfoBrill(page, endRec, pdf_path):
 
 
 # Has tests
-# TODO Detect - "Print: Manuscript"
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, pdf_path):
     # Reminder: Any field may be missing
 
     ISBN = page.search_for("ISBN")
+    isManuscript = page.search_for("Print: Manuscript")
+    isAncientText = page.search_for("Print: Ancient Text")
+    isClassicalWork = page.search_for("Print: Classical Work")
     if ISBN:
         print("Info: " + pdf_path + " has ISBN")
         output = {"type_of_reference": "BOOK"}
+    elif isManuscript:
+        output = {"type_of_reference": "MANSCPT"}
+    elif isAncientText:
+        output = {"type_of_reference": "ANCIENT"}
+    elif isClassicalWork:
+        output = {"type_of_reference": "CLSWK"}
     else:
         output = {"type_of_reference": "JOUR"}
 
