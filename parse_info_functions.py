@@ -190,9 +190,11 @@ def parseInfoGeneral(infoLines, output):
 
 
 # Has test
+# TODO remove () and numbers from journal name?
 # pymupdf used here
 # Assumes all sections are present, whether they have info or not
 def findInfoPersee(page, citeThisDocRec, pdf_path):
+    yearSet = False
     # Reminder: Any field may be missing
     ISBN = page.search_for("ISBN")
     if ISBN:
@@ -253,7 +255,14 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 
     for index in range(2, len(citation)):
         item = citation[index]
+        # Not every journal name is followed by a period before the year
         if item.startswith("In: "):
+            if "(" in item:
+                journalName, remainder = item.split("(")
+                output["journal_name"] = journalName.strip()
+                year = remainder.split(")")[0].strip()
+                output["year"] = year
+                yearSet = True
             output["journal_name"] = item.strip("In: ")
         if citation[index - 1].startswith("pp"):
             pages = item
@@ -263,11 +272,12 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
             output["start_page"] = startPage.strip()
             output["end_page"] = endPage.strip(";")
         elif item.startswith("1") or item.startswith("2"):
+            # Ex: 1957, tome 115
             parts = item.split(", ")
             for part in parts:
                 if part.startswith("tome"):
                     output["volume"] = part.strip("tome ")
-                else:
+                elif not yearSet:
                     output["year"] = part.strip(")")
 
     return output, 1
@@ -304,6 +314,7 @@ def findInfoBrill(page, endRec, pdf_path):
 
 
 # Has tests
+# TODO Detect - "Print: Manuscript"
 # Assumes all sections are present, whether they have info or not
 def findInfoJSTOR(page, pdf_path):
     # Reminder: Any field may be missing
@@ -325,7 +336,7 @@ def findInfoJSTOR(page, pdf_path):
     else:
         print("Update: PDF is from JSTOR")
 
-    output["title"] = infoLines[0]
+    output["title"] = infoLines[0].strip()
     for line in infoLines[1:]:
         if line.startswith("Author(s):"):
             authors = line[10:].split(", ")

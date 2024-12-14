@@ -8,6 +8,7 @@ END_KEYWORDS = [
     "USER JOURNAL TITLE",  # ?
     "OCLC #:",
     "URL",
+    "Stable URL:",
 ]
 KEYWORDS = [
     "Author(s):",
