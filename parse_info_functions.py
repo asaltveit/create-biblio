@@ -1,11 +1,10 @@
-import pymupdf  # PyMuPDF / fitz # For reading PDF
+import pymupdf  # For reading PDF
 import re
 import os
 from constants import END_KEYWORDS, KEYWORDS
 
 # Other formats:
 # Taylor and Francis = https://www.tandfonline.com/doi/full/10.1080/02549948.2016.1170348?scroll=top&needAccess=true
-# Brill = https://brill.com/view/journals/jwl/1/2/article-p143_2.xml?rskey=LBePrJ&result=2&ebody=pdf-117260
 
 # TODO Likely need a format specific to Taylor and Francis
 
@@ -34,14 +33,19 @@ def collectYearManuscriptCode(file_name, output):
     return output
 
 
-# 56-7 is pages 56 and 57, not pages 56 to 07
-# only change number of digits on end of startPage as the number of digits after -
+# Has tests
 def collectPageNumbers(file_name, output):
     pageSections = re.findall(r" pp [0-9]{1,8}-[0-9]{1,8}", file_name)
     if pageSections:
         startPage, endPage = pageSections[0].replace(" pp ", "", 1).split("-")
         output["start_page"] = startPage
-        output["end_page"] = endPage
+        startLength = len(startPage)
+        endLength = len(endPage)
+        if endLength >= startLength:
+            output["end_page"] = endPage
+        else:
+            # 56-7 is pages 56 and 57, not pages 56 to 07
+            output["end_page"] = startPage[: startLength - endLength] + endPage
         file_name_parts = re.split(r" pp [0-9]{1,8}-[0-9]{1,8}", file_name)
         file_name = "".join(file_name_parts)
         print("Update: Found page numbers")
@@ -51,8 +55,6 @@ def collectPageNumbers(file_name, output):
 
 
 # Has tests
-# TODO Search for 'pp ' in file name to get page numbers
-# (2 pdfs with this format in dad's recent run)
 def getInfoFromFileName(file_path, output={}):
     print("Update: Collecting info from file name")
     file_name = os.path.basename(os.path.normpath(file_path))
@@ -272,6 +274,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 
 
 # Has test
+# Brill = https://brill.com/view/journals/jwl/1/2/article-p143_2.xml?rskey=LBePrJ&result=2&ebody=pdf-117260
 def findInfoBrill(page, endRec, pdf_path):
     output = {}
 

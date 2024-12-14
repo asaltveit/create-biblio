@@ -12,8 +12,6 @@ from parse_info_functions import (
     getInfoGeneral,
 )
 
-# TODO Add capsys and assert on prints
-
 # collectPageNumbers
 @pytest.mark.parametrize(
     "file_name,output,expectedOutput,expectedPrint",
@@ -27,13 +25,13 @@ from parse_info_functions import (
         (
             "De Rossi ICUR II pp 244-9 from Paris Lat 8071.pdf",
             {},
-            {"start_page": "244", "end_page": "9"},
+            {"start_page": "244", "end_page": "249"},
             "Update: Found page numbers",
         ),
         (
             "De Rossi ICUR II pp 56-7 from Paris Lat 8071.pdf",
             {"authors": ["Blake"]},
-            {"authors": ["Blake"], "start_page": "56", "end_page": "7"},
+            {"authors": ["Blake"], "start_page": "56", "end_page": "57"},
             "Update: Found page numbers",
         ),
     ],
