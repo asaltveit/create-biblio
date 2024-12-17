@@ -1,6 +1,4 @@
-import argparse  # To collect arguments from command line # using argparse-1.4.0
 import pymupdf
-
 
 from parse_info_functions import (
     generalInfoCollector,
@@ -15,21 +13,16 @@ from os_functions import (
     checkInputPathExists,
 )
 
-from other_functions import createBiblio
+from other_functions import createBiblio, getCommandLineArguments
 
 # Searches given folder and all sub folders for PDFs
 # Collects citation info from JSTOR or Persee formats
 # Adds RIS foramt entries to a file
 
-# Added requirements.txt for easier setup
-# Added to Github
-# Added dev tools
-# Added README
 
 risEntries = []
 anomalies = []
 
-# Want any counts for resource type?
 numJSTOR = 0
 numPersee = 0
 numOther = 0
@@ -98,26 +91,7 @@ def findInfo(pdf_path):
     risEntries.append(output)
 
 
-# Does this need a test?
-def getCommandLineArguments():
-    parser = argparse.ArgumentParser(description="Creates ris file from PDF")
-    # Take input path from command line
-    parser.add_argument(
-        "--inputPath", required=True, type=str, help="Enter path of folder"
-    )
-    # Also take optional output path (which has to be .ris) from command line
-    parser.add_argument(
-        "--outputPath",
-        required=False,
-        type=str,
-        default="",
-        help="Enter path of RIS file (.ris)",
-    )
-    args = parser.parse_args()
-    return args.outputPath, args.inputPath
-
-
-# Does this function need a test?
+# Has test
 def main():
     outputFilePath, inputFolderPath = getCommandLineArguments()
 

@@ -134,10 +134,6 @@ infolines_jstor = [
     "Source: Modern Philology , May, 1923, Vol. 20, No. 4 (May, 1923), pp. 403-424  Published by: The University of Chicago Press Stable URL: https://www.jstor.org/stable/433697JSTOR is a not-for-profit service that helps scholars, researchers, and students discover, use, and build upon a wide range of content in a trusted digital archive. We use information technology and tools to increase productivity and facilitate new forms of scholarship. For more information about JSTOR, please contact support@jstor.org.  Your use of the JSTOR archive indicates your acceptance of the Terms & Conditions of Use, available at ",
 ]
 no_infolines = ([], {"title": "blah, blah, blah"}, {"title": "blah, blah, blah"})
-# Persee - not working
-# infolines_persee_output = {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957'}
-# infolines_persee = (["Bibliothèque de l'école deschartesLes manuscrits de Loup de Ferrières.A propos du ms. Orléans 162 (139) corrigé de sa main.Elisabeth PellegrinCiter ce document / Cite this document :Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5-31;doi : https://doi.org/10.3406/bec.1957.449558", ''], infolines_persee_output, {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957', 'type_of_reference': 'JOUR'})
-# infolines_persee_no_output = (["Bibliothèque de l'école deschartesLes manuscrits de Loup de Ferrières.A propos du ms. Orléans 162 (139) corrigé de sa main.Elisabeth PellegrinCiter ce document / Cite this document :Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5-31;doi : https://doi.org/10.3406/bec.1957.449558", ''], {}, {'authors': ['Pellegrin'], 'title': 'Les manuscrits de Loup de Ferrières', 'year': '1957', 'type_of_reference': 'JOUR'})
 
 
 def test_findInfoPersee(tmp_path, capsys):
@@ -209,8 +205,8 @@ def test_parseInfoGeneral(inputLines, output, expected, capsys):
 
 
 # findInfoJSTOR - TODO test if title isn't found
+# TODO test reference types
 def test_findInfoJSTOR(tmp_path, capsys):
-    # TODO What needs to be tested here?
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
     f1.touch()  # create a file "myfile" in "mydir"
@@ -311,7 +307,7 @@ def test_findInfoBrill(tmp_path, capsys):
 
 
 # TODO Make all these tests more robust
-# getInfoGeneral - TODO test if title isn't found
+# TODO test reference types
 def set_up_test_directory(tmp_path):
     # Typical top-level PDF
     pdf1 = tmp_path / "mydir/myfile.pdf"
@@ -343,7 +339,7 @@ Fichier pdf généré le 15/03/2022"""
     return fs
 
 
-# Doesn't have prints
+# No prints to test
 def test_getInfoGeneral(tmp_path):
     fs = set_up_test_directory(tmp_path)
 
@@ -377,11 +373,6 @@ def test_getInfoGeneral(tmp_path):
 # type: (unittest.mock.Mock) -> None
 # my_function("/path/to/dir")
 # os_system.assert_called_once_with('ls /path/to/dir')
-
-# @pytest.mark.parametrize("earned,spent,expected", [
-# (30, 10, 20),
-# (20, 2, 18),
-# ])
 
 # CI pipeline:
 # https://semaphoreci.com/community/tutorials/testing-python-applications-with-pytest
