@@ -30,3 +30,10 @@ def getCommandLineArguments(args=None):
     )
     arguments = parser.parse_args(args)
     return arguments.outputPath, arguments.inputPath
+
+
+def handlePlurals(num, source_type):
+    if num == 1:
+        return "There was 1 " + "PDF from " + source_type
+    else:
+        return "There were " + str(num) + " PDFs from " + source_type

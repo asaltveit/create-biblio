@@ -13,7 +13,7 @@ from os_functions import (
     checkInputPathExists,
 )
 
-from other_functions import createBiblio, getCommandLineArguments
+from other_functions import createBiblio, getCommandLineArguments, handlePlurals
 
 # Searches given folder and all sub folders for PDFs
 # Collects citation info from JSTOR or Persee formats
@@ -80,10 +80,11 @@ def findInfo(pdf_path):
         else:
             numPersee += addToPerseeCount
     else:
-        print(
-            "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
-        )
-        fileNameInfo = getInfoFromFileName(pdf_path)
+        # print(
+        #    "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
+        # )
+        # getInfoFromFileName returns (dict, num)
+        fileNameInfo = getInfoFromFileName(pdf_path)[0]
         output = generalInfoCollector(page, fileNameInfo)
         numFileName += 1
         numOther += 1
@@ -113,9 +114,9 @@ def main():
         findInfo(path)
 
     # Keeping counts of types, just in case
-    print("Update: There were ", str(numJSTOR), " PDFs from JSTOR")
-    print("Update: There were ", str(numPersee), " PDFs from Persee")
-    print("Update: There were ", str(numOther), " PDFs with unknown format")
+    print(handlePlurals(numJSTOR, "JSTOR"))
+    print(handlePlurals(numPersee, "Persee"))
+    print(handlePlurals(numOther, "an unknown format"))
     print("Update: Searched file names for info for ", str(numFileName), " PDFs")
 
     if risEntries:

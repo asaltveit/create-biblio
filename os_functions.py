@@ -20,7 +20,7 @@ def checkInputPathExists(file: str):
     try:
         path = os.path.exists(file)
         if path:
-            print("Update: Input path exists")
+            # print("Update: Input path exists")
             return True
         else:
             print("Error: Input path does not exist")

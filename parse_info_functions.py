@@ -69,28 +69,29 @@ def getInfoFromFileName(file_path, output={}):
     output = collectYearManuscriptCode(file_name, output)
 
     textSections = re.split(r"(?<!\d)\d{4}(?!\d)", file_name)
+    # Seems to be too many print statements
     if len(textSections) == 2 and textSections[1]:
         author, title = textSections
         output["authors"] = [author.strip()]
         output["title"] = title.strip()
-        print("Update: Author found")
-        print("Update: Article title found")
+        # print("Update: Author found")
+        # print("Update: Article title found")
     # If there was only text and year, nothing after
     elif len(textSections) == 2:
         title = textSections[0]
         output["title"] = title.strip()
-        print("Update: Article title found")
+        # print("Update: Article title found")
     elif len(textSections) > 2:
         author = textSections[0]
         title = textSections[1]
         output["authors"] = [author.strip()]
         output["title"] = title.strip()
-        print("Update: Author found")
-        print("Update: Article title found")
+        # print("Update: Author found")
+        # print("Update: Article title found")
     else:
         # Strip is unlikely to do anything here, just to be safe?
         output["title"] = file_name.strip()
-        print("Update: Article title found")
+        # print("Update: Article title found")
 
     return output, 2
 
@@ -213,6 +214,8 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
 
     endRec = page.search_for("https://")
     if not endRec:
+        endRec = page.search_for("http://")  # Just in case?
+    if not endRec:
         endRec = page.search_for("Fichier")
     if not endRec:
         end = page.rect.y1
@@ -253,9 +256,7 @@ def findInfoPersee(page, citeThisDocRec, pdf_path):
         # TODO Should general info be parsed for this as well?
         # Returned number will come from getInfoFromFileName
         info = getInfoFromFileName(pdf_path, output)
-        return getInfoFromFileName(pdf_path, info)
-    else:
-        print("Update: PDF is from Persee")
+        return generalInfoCollector(page, info)(pdf_path, info)
 
     output["title"] = title
 
@@ -312,8 +313,6 @@ def findInfoBrill(page, endRec, pdf_path):
         # Returned number will come from getInfoFromFileName
         info = getInfoFromFileName(pdf_path, output)
         return generalInfoCollector(page, info)
-    else:
-        print("Update: PDF is from Brill")
     output["title"] = lines[2].strip()
     output["authors"] = [x.strip() for x in lines[3].split(",")]
     return output, 1
@@ -347,8 +346,6 @@ def findInfoJSTOR(page, pdf_path):
         # Returned number will come from getInfoFromFileName
         info = getInfoFromFileName(pdf_path, output)
         return generalInfoCollector(page, info)
-    else:
-        print("Update: PDF is from JSTOR")
 
     output["title"] = infoLines[0].strip()
     for line in infoLines[1:]:
