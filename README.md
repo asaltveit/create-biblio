@@ -99,5 +99,6 @@ If you end up with multiple python virtual environments, here are the commands t
 ## Further Work
 - A full set of unit tests
 - Additional output file types
+- Possibly incorporate computer vision
 
 
