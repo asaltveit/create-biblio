@@ -59,7 +59,7 @@ Any output file may need to be cleaned up by the user.
    ```
 
 ### To fetch updates:
-Follow the instructions for Returning Set-up, then use: 
+Follow the instructions for Returning Set-up, then use:
    ```  git pull origin main  ```
 
 ## Run
@@ -71,7 +71,7 @@ If you get a python error, try:
 python3 create_biblio.py --inputPath="path/to/folder" --outputPath="optional/path/to/file.ris"
 ```
 
-Program outputs: 
+Program outputs:
 - file.ris
 
 ## Trouble Shooting
@@ -100,5 +100,3 @@ If you end up with multiple python virtual environments, here are the commands t
 - A full set of unit tests
 - Additional output file types
 - Possibly incorporate computer vision
-
-

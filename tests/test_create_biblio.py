@@ -104,14 +104,12 @@ def set_up_test_directory(tmp_path):
     # Top-level PDF with dashes
     pdf2 = tmp_path / "paths/my-file-2.pdf"
     pdf2.touch()
-    pdf2.write_text(
-        """Bibliothèque de l'école des chartes
+    pdf2.write_text("""Bibliothèque de l'école des chartes
 Citer ce document / Cite this document :
 Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;
 doi : https://doi.org/10.3406/bec.1957.449558
 https://www.persee.fr/doc/bec_0373-6237_1957_num_115_1_449558
-Fichier pdf généré le 15/03/2022"""
-    )
+Fichier pdf généré le 15/03/2022""")
     # Subfolder PDF starting with a dash
     pdf3 = tmp_path / "paths/innerFolder/-testFile3.pdf"
     pdf3.parent.mkdir()
