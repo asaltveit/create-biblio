@@ -12,6 +12,7 @@ from parse_info_functions import (
     getInfoGeneral,
 )
 
+
 # collectPageNumbers
 @pytest.mark.parametrize(
     "file_name,output,expectedOutput,expectedPrint",
