@@ -30,6 +30,7 @@ numOther = 0
 numFileName = 0
 numBrill = 0
 
+
 # Has tests
 def findInfo(pdf_path):
     try:

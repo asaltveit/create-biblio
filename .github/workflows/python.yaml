@@ -5,11 +5,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-        - uses: actions/checkout@v6
+        - uses: actions/checkout@v7
         - name: Set up Python 3
           uses: actions/setup-python@v6
           with:
-            python-version: 3.9
+            python-version: "3.13"
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
@@ -21,7 +21,4 @@ jobs:
             # exit-zero treats all errors as warnings.
             ruff check --exit-zero
         - name: Check formatting with black
-          uses: psf/black@stable
-          with:
-            src: "."
-            options: "--verbose" # --check
+          run: black --check --config=pyproject.toml .

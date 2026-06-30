@@ -12,6 +12,7 @@ from parse_info_functions import (
     getInfoGeneral,
 )
 
+
 # collectPageNumbers
 @pytest.mark.parametrize(
     "file_name,output,expectedOutput,expectedPrint",
@@ -140,14 +141,12 @@ def test_findInfoPersee(tmp_path, capsys):
     f1 = tmp_path / "mydir/myfile.pdf"
     f1.parent.mkdir()  # create a directory "mydir" in temp folder (which is the parent directory of "myfile"
     f1.touch()  # create a file "myfile" in "mydir"
-    f1.write_text(
-        """Bibliothèque de l'école des chartes
+    f1.write_text("""Bibliothèque de l'école des chartes
 Citer ce document / Cite this document :
 Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;
 doi : https://doi.org/10.3406/bec.1957.449558
 https://www.persee.fr/doc/bec_0373-6237_1957_num_115_1_449558
-Fichier pdf généré le 15/03/2022"""
-    )
+Fichier pdf généré le 15/03/2022""")
 
     fs = [
         [
@@ -317,14 +316,12 @@ def set_up_test_directory(tmp_path):
     # Top-level PDF with dashes
     pdf2 = tmp_path / "mydir/my-file-2.pdf"
     pdf2.touch()
-    pdf2.write_text(
-        """Bibliothèque de l'école des chartes
+    pdf2.write_text("""Bibliothèque de l'école des chartes
 Citer ce document / Cite this document :
 Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières. . In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5- 31;
 doi : https://doi.org/10.3406/bec.1957.449558
 https://www.persee.fr/doc/bec_0373-6237_1957_num_115_1_449558
-Fichier pdf généré le 15/03/2022"""
-    )
+Fichier pdf généré le 15/03/2022""")
 
     fs = [
         [pdf1, ["Title: test title", "Author: Test Athor", "Year: 1985", "Issue: 20"]],
