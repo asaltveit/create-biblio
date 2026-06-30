@@ -10,6 +10,7 @@ END_KEYWORDS = [
     "URL",
     "Stable URL:",
 ]
+# examples of what to look for
 KEYWORDS = [
     "Author(s):",
     "Source:",

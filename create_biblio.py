@@ -19,6 +19,7 @@ from other_functions import createBiblio, getCommandLineArguments, handlePlurals
 # Collects citation info from JSTOR or Persee formats
 # Adds RIS foramt entries to a file
 
+# NLP techniques - https://levelup.gitconnected.com/using-nlp-to-authors-for-research-papers-6dd95ac28043
 
 risEntries = []
 anomalies = []
@@ -36,6 +37,10 @@ def findInfo(pdf_path):
     except Exception as e:
         print("Exception opening file: ", e)
         return
+    print(
+        "doc.metadata " + str(doc.metadata)
+    )  # some titles found, 1 author found, could incorporate?
+    # return
     page = doc[0]
     global numFileName
     global numJSTOR
@@ -112,7 +117,7 @@ def main():
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
-
+    return
     # Keeping counts of types, just in case
     print(handlePlurals(numJSTOR, "JSTOR"))
     print(handlePlurals(numPersee, "Persee"))
