@@ -1,0 +1,62 @@
+[
+  {
+    "source": "middlebury_rapid",
+    "lines": [
+      {"text": "TYPE:Article CC:CCL", "font": "Helvetica", "size": 10, "y0": 50, "label": "LABEL"},
+      {"text": "JOURNAL TITLE:Giornale italiano di filologia", "font": "Helvetica-Bold", "size": 10, "y0": 70, "label": "LABEL"},
+      {"text": "ARTICLE TITLE:Il cod. Vindobonensis Palatinus 9401* dell'Anthologia Latina", "font": "Helvetica-Bold", "size": 10, "y0": 90, "label": "LABEL"},
+      {"text": "ARTICLE AUTHOR:Zurli, Loriano", "font": "Helvetica", "size": 10, "y0": 110, "label": "LABEL"},
+      {"text": "VOLUME:50", "font": "Helvetica", "size": 10, "y0": 130, "label": "LABEL"},
+      {"text": "YEAR:1998", "font": "Helvetica", "size": 10, "y0": 150, "label": "LABEL"},
+      {"text": "PAGES:211-237", "font": "Helvetica", "size": 10, "y0": 170, "label": "LABEL"},
+      {"text": "ISSN: 0017-0461", "font": "Helvetica", "size": 10, "y0": 190, "label": "LABEL"}
+    ]
+  },
+  {
+    "source": "jstor_levitan",
+    "lines": [
+      {"text": "Dancing at the End of the Rope: Optatian Porfyry and the Field of Roman Verse", "font": "Times-Bold", "size": 14, "y0": 40, "label": "TITLE"},
+      {"text": "Author(s): W. Levitan", "font": "Times-Roman", "size": 10, "y0": 60, "label": "LABEL"},
+      {"text": "Source: Transactions of the American Philological Association (1974-2014), 1985, Vol. 115 (1985), pp. 245-269", "font": "Times-Roman", "size": 10, "y0": 80, "label": "LABEL"},
+      {"text": "Published by: The Johns Hopkins University Press", "font": "Times-Roman", "size": 10, "y0": 100, "label": "LABEL"},
+      {"text": "Stable URL: https://www.jstor.org/stable/284201", "font": "Times-Roman", "size": 10, "y0": 120, "label": "IGNORE"}
+    ]
+  },
+  {
+    "source": "brill_damrosch",
+    "lines": [
+      {"text": "Journal of World Literature 1 (2016) 143–157", "font": "Times-Roman", "size": 10, "y0": 30, "label": "JOURNAL"},
+      {"text": "Scriptworlds Lost and Found", "font": "Times-Bold", "size": 14, "y0": 60, "label": "TITLE"},
+      {"text": "David Damrosch", "font": "Times-Roman", "size": 11, "y0": 90, "label": "AUTHOR"},
+      {"text": "Harvard University", "font": "Times-Roman", "size": 10, "y0": 110, "label": "IGNORE"},
+      {"text": "Abstract", "font": "Times-Bold", "size": 11, "y0": 140, "label": "IGNORE"}
+    ]
+  },
+  {
+    "source": "persee_pellegrin",
+    "lines": [
+      {"text": "Bibliothèque de l'école des chartes", "font": "Times-Roman", "size": 10, "y0": 20, "label": "JOURNAL"},
+      {"text": "Pellegrin Elisabeth. Les manuscrits de Loup de Ferrières.", "font": "Times-Roman", "size": 10, "y0": 50, "label": "AUTHOR"},
+      {"text": "In: Bibliothèque de l'école des chartes. 1957, tome 115. pp. 5-31", "font": "Times-Roman", "size": 10, "y0": 70, "label": "JOURNAL"},
+      {"text": "doi : https://doi.org/10.3406/bec.1957.449558", "font": "Times-Roman", "size": 10, "y0": 90, "label": "DOI"}
+    ]
+  },
+  {
+    "source": "general_labeled",
+    "lines": [
+      {"text": "Title: test title", "font": "Helvetica", "size": 12, "y0": 40, "label": "LABEL"},
+      {"text": "Author: Test Author", "font": "Helvetica", "size": 10, "y0": 60, "label": "LABEL"},
+      {"text": "Year: 1985", "font": "Helvetica", "size": 10, "y0": 80, "label": "LABEL"},
+      {"text": "Issue: 20", "font": "Helvetica", "size": 10, "y0": 100, "label": "LABEL"}
+    ]
+  },
+  {
+    "source": "filename_fallback",
+    "lines": [
+      {"text": "Unknown Publisher Header", "font": "Helvetica-Bold", "size": 12, "y0": 40, "label": "JOURNAL"},
+      {"text": "A Study of Medieval Manuscripts", "font": "Helvetica-Bold", "size": 14, "y0": 70, "label": "TITLE"},
+      {"text": "Jane Smith, John Doe", "font": "Helvetica", "size": 11, "y0": 100, "label": "AUTHOR"},
+      {"text": "Vol. 12 (2003), pp. 45-67", "font": "Helvetica", "size": 10, "y0": 130, "label": "PAGES"}
+    ]
+  }
+]

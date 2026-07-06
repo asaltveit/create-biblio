@@ -5,12 +5,14 @@ END_KEYWORDS = [
     "B o o k s t a c k s",
     "Month:",
     "MONTH:",
-    "USER JOURNAL TITLE",  # ?
+    "USER JOURNAL TITLE",
     "OCLC #:",
     "URL",
     "Stable URL:",
+    "Downloaded from",
+    "Processed by RapidX",
+    "This material may be protected",
 ]
-# examples of what to look for
 KEYWORDS = [
     "Author(s):",
     "Source:",
@@ -48,4 +50,63 @@ KEYWORDS = [
     "In:",
     "doi:",
     "DOI:",
+    "Title:",
+    "Author:",
+    "Auteur(s):",
+    "Auteur:",
+]
+
+# Maps normalized label prefixes to internal field keys for fuzzy matching.
+LABEL_FIELD_MAP = {
+    "author": "authors",
+    "authors": "authors",
+    "article author": "authors",
+    "artide author": "authors",
+    "auteur": "authors",
+    "title": "title",
+    "article title": "title",
+    "artide title": "title",
+    "journal": "journal_name",
+    "journal name": "journal_name",
+    "journal title": "journal_name",
+    "source": "journal_name",
+    "year": "year",
+    "year published": "year",
+    "month/year": "year",
+    "volume": "volume",
+    "vol.": "volume",
+    "vol": "volume",
+    "issue": "issue",
+    "pages": "pages",
+    "pp.": "pages",
+    "doi": "doi",
+    "issn": "issn",
+    "published by": "publisher",
+    "type": "type_of_reference",
+    "isbn": "isbn",
+    "in": "journal_name",
+}
+
+FUZZY_LABEL_THRESHOLD = 0.85
+
+DOI_PATTERN = r"10\.\d{4,9}/[^\s]+"
+ISSN_PATTERN = r"\b\d{4}-\d{3}[\dXx]\b"
+YEAR_PATTERN = r"\b(19|20)\d{2}\b"
+PAGES_PATTERN = r"\bpp?\.?\s*(\d{1,6})\s*[-–—]\s*(\d{1,6})\b"
+VOLUME_PATTERN = r"\b(?:Vol\.?|VOLUME:?|Volume:?)\s*(\d+)\b"
+TOME_PATTERN = r"\btome\s+(\d+)\b"
+
+ML_FIELD_LABELS = [
+    "AUTHOR",
+    "TITLE",
+    "JOURNAL",
+    "YEAR",
+    "VOLUME",
+    "ISSUE",
+    "PAGES",
+    "DOI",
+    "ISSN",
+    "PUBLISHER",
+    "LABEL",
+    "IGNORE",
 ]

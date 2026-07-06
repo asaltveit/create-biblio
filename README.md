@@ -71,6 +71,26 @@ If you get a python error, try:
 python3 create_biblio.py --inputPath="path/to/folder" --outputPath="optional/path/to/file.ris"
 ```
 
+### Optional ML fallback (`--use-ml`)
+
+By default, create-biblio uses rule-based parsers for known PDF formats (JSTOR, Persee, Brill) and enhanced heuristics for unknown layouts. To enable a small line-level classifier fallback when required fields (title or authors) are still missing:
+
+1. Install ML dependencies (Windows, macOS, and Linux):
+   ```bash
+   pip install -r requirements-ml.txt
+   ```
+2. Run with the flag:
+   ```bash
+   python create_biblio.py --inputPath="path/to/folder" --use-ml
+   ```
+
+The bundled model lives in `models/line_crf/` (~1 MB). No GPU or large download is required.
+
+To retrain the classifier after adding labeled examples to `data/training_lines.json`:
+```bash
+python scripts/train_line_classifier.py
+```
+
 Program outputs:
 - file.ris
 
@@ -99,4 +119,4 @@ If you end up with multiple python virtual environments, here are the commands t
 ## Further Work
 - A full set of unit tests
 - Additional output file types
-- Possibly incorporate computer vision
+- Optional GROBID integration for difficult PDF layouts

@@ -28,8 +28,13 @@ def getCommandLineArguments(args=None):
         default="",
         help="Enter path of output RIS file",
     )
+    parser.add_argument(
+        "--use-ml",
+        action="store_true",
+        help="Use line classifier fallback when required fields are missing",
+    )
     arguments = parser.parse_args(args)
-    return arguments.outputPath, arguments.inputPath
+    return arguments.outputPath, arguments.inputPath, arguments.use_ml
 
 
 def handlePlurals(num, source_type):

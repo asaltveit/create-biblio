@@ -6,7 +6,10 @@ from parse_info_functions import (
     findInfoPersee,
     findInfoJSTOR,
     findInfoBrill,
+    getStructuredLines,
 )
+from line_features import structured_lines_to_features
+from line_classifier import maybe_apply_ml_fallback
 from os_functions import (
     searchFolder,
     checkOutputFileType,
@@ -19,8 +22,6 @@ from other_functions import createBiblio, getCommandLineArguments, handlePlurals
 # Collects citation info from JSTOR or Persee formats
 # Adds RIS foramt entries to a file
 
-# NLP techniques - https://levelup.gitconnected.com/using-nlp-to-authors-for-research-papers-6dd95ac28043
-
 risEntries = []
 anomalies = []
 
@@ -30,6 +31,18 @@ numOther = 0
 numFileName = 0
 numBrill = 0
 
+use_ml = False
+
+
+def _maybe_ml_enhance(page, output):
+    if not use_ml:
+        return output
+    structured_lines = getStructuredLines(page)
+    feature_dicts = structured_lines_to_features(
+        structured_lines, page_height=page.rect.height
+    )
+    return maybe_apply_ml_fallback(output, structured_lines, feature_dicts, use_ml=True)
+
 
 # Has tests
 def findInfo(pdf_path):
@@ -38,10 +51,7 @@ def findInfo(pdf_path):
     except Exception as e:
         print("Exception opening file: ", e)
         return
-    print(
-        "doc.metadata " + str(doc.metadata)
-    )  # some titles found, 1 author found, could incorporate?
-    # return
+    print("doc.metadata " + str(doc.metadata))
     page = doc[0]
     global numFileName
     global numJSTOR
@@ -49,17 +59,9 @@ def findInfo(pdf_path):
     global numOther
     global numBrill
 
-    # page.search_for returns a list of location rectangles
-
-    # JSTOR
     sourceRec = page.search_for("Source")
-    # Persee/French
-    citeThisDocRec = page.search_for("Citer ce document")  # Persee is always French
-    # Brill
+    citeThisDocRec = page.search_for("Citer ce document")
     abstractRec = page.search_for("Abstract")
-
-    # Converts to RIS format (seems easiest)
-    # See https://en.wikipedia.org/wiki/RIS_(file_format)#:~:text=RIS%20is%20a%20standardized%20tag,a%20number%20of%20reference%20managers.
 
     if abstractRec:
         print("Update: Using Brill format")
@@ -79,6 +81,7 @@ def findInfo(pdf_path):
             numJSTOR += addToJSTORCount
     elif citeThisDocRec:
         print("Update: Using Persee format")
+        print("Update: PDF is from Persee")
         output, addToPerseeCount = findInfoPersee(page, citeThisDocRec[0], pdf_path)
         if addToPerseeCount == 2:
             numFileName += 1
@@ -86,23 +89,21 @@ def findInfo(pdf_path):
         else:
             numPersee += addToPerseeCount
     else:
-        # print(
-        #    "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
-        # )
-        # getInfoFromFileName returns (dict, num)
+        print(
+            "Update: Didn't identify a known format (from JSTOR or Persee or Brill) - will use a general format"
+        )
         fileNameInfo = getInfoFromFileName(pdf_path)[0]
-        output = generalInfoCollector(page, fileNameInfo)
-        numFileName += 1
-        numOther += 1
+        output = generalInfoCollector(page, fileNameInfo, use_ml=use_ml)
 
+    output = _maybe_ml_enhance(page, output)
     risEntries.append(output)
 
 
 # Has test
 def main():
-    outputFilePath, inputFolderPath = getCommandLineArguments()
+    global use_ml
+    outputFilePath, inputFolderPath, use_ml = getCommandLineArguments()
 
-    # If no input path, there's nothing left to run
     if not checkInputPathExists(inputFolderPath):
         print("Update: Exiting program")
         return
@@ -111,15 +112,12 @@ def main():
 
     paths = searchFolder(inputFolderPath)
     if not paths or len(paths) == 0:
-        # print("Update: No PDFs found")
         print("Update: No output files created")
         print("Update: Finished")
         return
     for path in paths:
         print("Update: Finding info for - ", path)
         findInfo(path)
-    return
-    # Keeping counts of types, just in case
     print(handlePlurals(numJSTOR, "JSTOR"))
     print(handlePlurals(numPersee, "Persee"))
     print(handlePlurals(numOther, "an unknown format"))

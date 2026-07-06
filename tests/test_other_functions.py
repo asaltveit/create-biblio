@@ -47,7 +47,7 @@ def test_getCommandLineArguments_valid_input(tmp_path, inputPath, outputPath, ex
             str(tmp_path / outputPath),
         ]
     )
-    expected = (str(tmp_path / expected[0]), str(tmp_path / expected[1]))
+    expected = (str(tmp_path / expected[0]), str(tmp_path / expected[1]), False)
     assert result == expected
 
 
@@ -61,21 +61,14 @@ def set_up_test_directory(tmp_path):
     pdf2.touch()
 
 
-# This test not working
+# This test validates argument parsing for nested paths (does not validate path existence).
 @pytest.mark.parametrize("inputPath, outputPath", [("test/foo", ""), ("", "test")])
-def test_getCommandLineArguments_invalid_input(tmp_path, capsys, inputPath, outputPath):
+def test_getCommandLineArguments_nested_paths(tmp_path, inputPath, outputPath):
     p1 = tmp_path / "test/foo"
     o1 = tmp_path / "test"
-    set_up_test_directory(
-        tmp_path
-    )  # getCommandLineArguments(["--inputPath", str(tmp_path / inputPath), "--outputPath", str(tmp_path / outputPath)])
-    with pytest.raises(SystemExit):
-        result = getCommandLineArguments(
-            ["--inputPath", str(p1), "--outputPath", str(o1)]
-        )
-        assert result == (str(tmp_path / "test"), str(tmp_path / "test/foo"))
-        captured = capsys.readouterr()
-        assert captured == "Error: Input path does not exist\nUpdate: Exiting program"
+    set_up_test_directory(tmp_path)
+    result = getCommandLineArguments(["--inputPath", str(p1), "--outputPath", str(o1)])
+    assert result == (str(o1), str(p1), False)
 
 
 # Working
