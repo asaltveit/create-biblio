@@ -29,7 +29,9 @@ def documents_to_xy(documents):
         max_font = max(line.get("size", 0) for line in lines) or 1
         page_height = max(line.get("y0", 0) for line in lines) + 200
         for line in lines:
-            features = line_to_features(line, page_height=page_height, max_font_size=max_font)
+            features = line_to_features(
+                line, page_height=page_height, max_font_size=max_font
+            )
             x_sentence.append(features_to_crf_dict(features))
             y_sentence.append(line["label"])
         x_docs.append(x_sentence)

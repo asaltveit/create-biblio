@@ -31,7 +31,12 @@ def test_extract_patterns():
 
 
 def test_line_to_features():
-    line = {"text": "Author(s): John Doe", "font": "Helvetica-Bold", "size": 12, "y0": 50}
+    line = {
+        "text": "Author(s): John Doe",
+        "font": "Helvetica-Bold",
+        "size": 12,
+        "y0": 50,
+    }
     features = line_to_features(line, page_height=800, max_font_size=14)
     assert features["is_bold"] is True
     assert features["has_colon"] is True
