@@ -114,7 +114,9 @@ def _apply_labeled_field(output, field_key, value):
     if not value:
         return
     if field_key == "authors":
-        output["authors"] = [author.strip() for author in value.split(", ") if author.strip()]
+        output["authors"] = [
+            author.strip() for author in value.split(", ") if author.strip()
+        ]
     elif field_key == "title":
         _set_if_empty(output, "title", value)
     elif field_key == "journal_name":
@@ -164,7 +166,12 @@ def _apply_reference_type_from_line(output, line):
         if value:
             output["type_of_reference"] = value.split(" ")[0]
     elif ":" in line and fuzzy_match_label(line)[0]:
-        if output.get("type_of_reference") not in ("BOOK", "MANSCPT", "ANCIENT", "CLSWK"):
+        if output.get("type_of_reference") not in (
+            "BOOK",
+            "MANSCPT",
+            "ANCIENT",
+            "CLSWK",
+        ):
             output["type_of_reference"] = "JOUR"
 
 
@@ -180,7 +187,8 @@ def _apply_heuristic_fields(output, structured_lines):
     header_lines = [
         line
         for line in structured_lines
-        if line.get("y0", 0) <= max(line.get("y0", 0) for line in structured_lines) + 200
+        if line.get("y0", 0)
+        <= max(line.get("y0", 0) for line in structured_lines) + 200
         and line.get("text")
         and not is_end_line(line["text"])
         and not is_keyword_line(line["text"])
@@ -199,7 +207,9 @@ def _apply_heuristic_fields(output, structured_lines):
         for line in header_lines:
             text = line["text"].strip()
             if "," in text and len(text.split()) <= 8 and not text.startswith("http"):
-                output["authors"] = [name.strip() for name in text.split(",") if name.strip()]
+                output["authors"] = [
+                    name.strip() for name in text.split(",") if name.strip()
+                ]
                 break
     for line in structured_lines:
         text = line.get("text", "")
@@ -218,8 +228,12 @@ def generalInfoCollector(page, output, use_ml=False):
         info = getInfoGeneral(page)
     output = parseInfoGeneral(info, output, structured_lines=structured_lines)
     if use_ml:
-        feature_dicts = structured_lines_to_features(structured_lines, page_height=page.rect.height)
-        output = maybe_apply_ml_fallback(output, structured_lines, feature_dicts, use_ml=True)
+        feature_dicts = structured_lines_to_features(
+            structured_lines, page_height=page.rect.height
+        )
+        output = maybe_apply_ml_fallback(
+            output, structured_lines, feature_dicts, use_ml=True
+        )
     return output
 
 
@@ -233,7 +247,9 @@ def parseInfoGeneral(infoLines, output, structured_lines=None):
         if ":" in line:
             field_key, value = fuzzy_match_label(line)
             if field_key:
-                if field_key == "type_of_reference" and line.startswith(("TYPE:", "Type:")):
+                if field_key == "type_of_reference" and line.startswith(
+                    ("TYPE:", "Type:")
+                ):
                     _apply_labeled_field(output, field_key, value)
                 elif field_key == "isbn":
                     _apply_labeled_field(output, field_key, value)

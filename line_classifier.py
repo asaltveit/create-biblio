@@ -26,7 +26,9 @@ def _apply_label_to_output(label, text, output):
     if not text or label in ("LABEL", "IGNORE"):
         return
     if label == "AUTHOR":
-        authors = [author.strip() for author in re.split(r",\s*", text) if author.strip()]
+        authors = [
+            author.strip() for author in re.split(r",\s*", text) if author.strip()
+        ]
         if authors:
             output["authors"] = authors
     elif label == "TITLE":
