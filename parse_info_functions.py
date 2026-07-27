@@ -16,7 +16,6 @@ from line_classifier import maybe_apply_ml_fallback
 
 # TODO Likely need a format specific to Taylor and Francis
 
-
 # Has test
 def collectYearManuscriptCode(file_name, output):
     numbers4digits = re.findall(r"[0-9]{4}", file_name)
